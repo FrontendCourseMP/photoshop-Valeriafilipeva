@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Цифровое представление изображения — ЛР 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Vuetify CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.css">
+
+    <!-- Иконки для Vuetify (Material Design Icons) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <v-app>
+            <!-- Верхняя панель приложения -->
+            <v-app-bar color="primary" density="comfortable" dark>
+                <v-app-bar-title>Цифровое представление изображения — ЛР 1</v-app-bar-title>
+                <span class="text-caption ml-4">PNG · JPG · GB7</span>
+            </v-app-bar>
+
+            <!-- Основная область -->
+            <v-main>
+                <v-container class="py-4" fluid>
+                    <!-- Панель управления -->
+                    <v-row class="mb-4" align="center" justify="space-between">
+                        <v-col cols="12" md="6">
+                            <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)"
+                                accept=".png,.jpg,.jpeg,.gb7" prepend-icon="mdi-file-image" density="comfortable"
+                                @change="onFileChange"></v-file-input>
+                        </v-col>
+
+                        <v-col cols="12" md="6" class="d-flex flex-wrap gap-2 justify-end">
+                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsPng">
+                                <v-icon start>mdi-download</v-icon>
+                                PNG
+                            </v-btn>
+
+                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsJpg">
+                                <v-icon start>mdi-download</v-icon>
+                                JPG
+                            </v-btn>
+
+                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsGb7">
+                                <v-icon start>mdi-download</v-icon>
+                                GB7
+                            </v-btn>
+                        </v-col>
+                    </v-row>
+
+                    <!-- Холст -->
+                    <v-row>
+                        <v-col cols="12">
+                            <div class="canvas-wrapper">
+                                <canvas id="imageCanvas" ref="canvasRef"></canvas>
+                            </div>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-main>
+
+            <!-- Строка состояния -->
+            <v-footer app class="status-bar" height="32">
+                <div class="status-text">
+                    {{ statusText }}
+                </div>
+            </v-footer>
+        </v-app>
+    </div>
+
+    <!-- Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <!-- Vuetify 3 -->
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.js"></script>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

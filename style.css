@@ -1,0 +1,39 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+#app {
+  height: 100%;
+}
+
+/* Обёртка для canvas */
+.canvas-wrapper {
+  border: 1px solid #ccc;
+  background-color: #fafafa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  min-height: 300px;
+}
+
+/* Сам холст */
+#imageCanvas {
+  max-width: 100%;
+  height: auto;
+  background-color: #eee;
+}
+
+/* Строка состояния */
+.status-bar {
+  padding: 0 12px;
+  font-size: 13px;
+}
+
+.status-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
