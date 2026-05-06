@@ -1,16 +1,14 @@
 const { createApp, ref, onMounted } = Vue;
 const { createVuetify } = Vuetify;
 
-const GB7_SIGNATURE = [0x47, 0x42, 0x37, 0x1D]; // "GB7" + 0x1D
+const GB7_SIGNATURE = [0x47, 0x42, 0x37, 0x1d];
 
 const app = createApp({
   setup() {
     const canvasRef = ref(null);
     const selectedFile = ref(null);
-
-    const statusText = ref('Изображение не загружено');
+    const statusText = ref("Изображение не загружено");
     const hasImage = ref(false);
-
     const currentWidth = ref(0);
     const currentHeight = ref(0);
     const currentColorDepth = ref(null);
@@ -19,20 +17,24 @@ const app = createApp({
     let ctx = null;
 
     onMounted(() => {
-      const canvas = canvasRef.value;
-      ctx = canvas.getContext('2d');
-      updateStatusBar();
+      setTimeout(() => {
+        const canvas = canvasRef.value;
+        if (!canvas) {
+          console.error("Canvas не найден!");
+          return;
+        }
+        ctx = canvas.getContext("2d");
+        updateStatusBar();
+      }, 0);
     });
 
     function updateStatusBar() {
       if (!currentWidth.value || !currentHeight.value) {
-        statusText.value = 'Изображение не загружено';
+        statusText.value = "Изображение не загружено";
         return;
       }
-
-      const depth = currentColorDepth.value || 'неизвестна';
-      statusText.value =
-        `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${depth}`;
+      const depth = currentColorDepth.value || "неизвестна";
+      statusText.value = `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${depth}`;
     }
 
     function drawImageToCanvas(image) {
@@ -50,58 +52,62 @@ const app = createApp({
       updateStatusBar();
     }
 
-    function onFileChange(files) {
-      const file = Array.isArray(files) ? files[0] : files;
+    function onFileChange(file) {
       if (!file) return;
 
       const name = file.name.toLowerCase();
 
-      if (name.endsWith('.png') || name.endsWith('.jpg') || name.endsWith('.jpeg')) {
+      if (
+        name.endsWith(".png") ||
+        name.endsWith(".jpg") ||
+        name.endsWith(".jpeg")
+      ) {
         loadStandardImage(file);
-      } else if (name.endsWith('.gb7')) {
+      } else if (name.endsWith(".gb7")) {
         loadGb7Image(file);
       } else {
-        alert('Поддерживаются только файлы PNG, JPG и GB7');
+        alert("Поддерживаются только файлы PNG, JPG и GB7");
       }
     }
 
     function loadStandardImage(file) {
       const url = URL.createObjectURL(file);
       const img = new Image();
+
       img.onload = () => {
-        currentColorDepth.value = '24 бита (RGB)';
+        currentColorDepth.value = "24 бита (RGB)";
         hasMaskFlag.value = false;
         drawImageToCanvas(img);
         URL.revokeObjectURL(url);
       };
+
       img.onerror = () => {
         URL.revokeObjectURL(url);
-        alert('Ошибка при загрузке изображения');
+        alert("Ошибка при загрузке изображения");
       };
+
       img.src = url;
     }
 
     function parseGb7Header(dataView) {
       for (let i = 0; i < 4; i++) {
         if (dataView.getUint8(i) !== GB7_SIGNATURE[i]) {
-          throw new Error('Неверная сигнатура GB7');
+          throw new Error("Неверная сигнатура GB7");
         }
       }
 
       const version = dataView.getUint8(4);
       if (version !== 0x01) {
-        throw new Error('Неподдерживаемая версия GB7');
+        throw new Error("Неподдерживаемая версия GB7");
       }
 
       const flag = dataView.getUint8(5);
       const maskFlag = (flag & 0x01) === 1;
 
-      const width = dataView.getUint16(6, false);  // big-endian
-      const height = dataView.getUint16(8, false); // big-endian
+      const width = dataView.getUint16(6, false);
+      const height = dataView.getUint16(8, false);
 
       const reserved = dataView.getUint16(10, false);
-      // reserved по ТЗ = 0x0000, читаем, но не используем
-
       return { width, height, maskFlag };
     }
 
@@ -112,7 +118,7 @@ const app = createApp({
       const pixelCount = width * height;
       const expectedLength = 12 + pixelCount;
       if (arrayBuffer.byteLength < expectedLength) {
-        throw new Error('Файл GB7 поврежден или неполный');
+        throw new Error("Файл GB7 поврежден или неполный");
       }
 
       const imageData = ctx.createImageData(width, height);
@@ -124,17 +130,16 @@ const app = createApp({
       for (let i = 0; i < pixelCount; i++) {
         const byte = dataView.getUint8(srcOffset++);
 
-        const gray7 = byte & 0x7F;          // 7 младших бит
-        const maskBit = (byte & 0x80) !== 0; // старший бит
+        const gray7 = byte & 0x7f;
+        const maskBit = (byte & 0x80) !== 0;
 
-        const gray = Math.round(gray7 / 127 * 255);
+        const gray = Math.round((gray7 / 127) * 255);
 
         out[dstOffset] = gray;
         out[dstOffset + 1] = gray;
         out[dstOffset + 2] = gray;
 
         if (maskFlag) {
-          // 0 — замаскирован (прозрачный), 1 — не замаскирован
           out[dstOffset + 3] = maskBit ? 255 : 0;
         } else {
           out[dstOffset + 3] = 255;
@@ -149,7 +154,9 @@ const app = createApp({
     async function loadGb7Image(file) {
       try {
         const arrayBuffer = await file.arrayBuffer();
-        const { imageData, width, height, maskFlag } = decodeGb7ToImageData(arrayBuffer);
+
+        const { imageData, width, height, maskFlag } =
+          decodeGb7ToImageData(arrayBuffer);
 
         const canvas = canvasRef.value;
         canvas.width = width;
@@ -162,14 +169,14 @@ const app = createApp({
 
         hasMaskFlag.value = maskFlag;
         currentColorDepth.value = maskFlag
-          ? '7+1 бит (7 бит серого + маска)'
-          : '7 бит (оттенки серого)';
+          ? "7+1 бит (7 бит серого + маска)"
+          : "7 бит (оттенки серого)";
 
         hasImage.value = true;
         updateStatusBar();
       } catch (e) {
         console.error(e);
-        alert('Ошибка при загрузке GB7: ' + e.message);
+        alert("Ошибка при загрузке GB7: " + e.message);
       }
     }
 
@@ -184,9 +191,7 @@ const app = createApp({
       view.setUint8(4, 0x01);
 
       let flag = 0;
-      if (maskFlag) {
-        flag |= 0x01;
-      }
+      if (maskFlag) flag |= 0x01;
       view.setUint8(5, flag);
 
       view.setUint16(6, width, false);
@@ -199,7 +204,7 @@ const app = createApp({
 
     function encodeCanvasToGb7(maskFlag) {
       if (!currentWidth.value || !currentHeight.value) {
-        throw new Error('Нет изображения для кодирования');
+        throw new Error("Нет изображения для кодирования");
       }
 
       const width = currentWidth.value;
@@ -209,6 +214,7 @@ const app = createApp({
       const src = imageData.data;
 
       const headerBuffer = createGb7Header(width, height, maskFlag);
+
       const pixelCount = width * height;
       const pixelsBuffer = new ArrayBuffer(pixelCount);
       const pixelsView = new DataView(pixelsBuffer);
@@ -224,15 +230,12 @@ const app = createApp({
 
         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
         const grayClamped = Math.max(0, Math.min(255, gray));
+        const gray7 = Math.round((grayClamped / 255) * 127);
 
-        const gray7 = Math.round(grayClamped / 255 * 127);
+        let byte = gray7 & 0x7f;
 
-        let byte = gray7 & 0x7F;
-
-        if (maskFlag) {
-          if (a > 0) {
-            byte |= 0x80;
-          }
+        if (maskFlag && a > 0) {
+          byte |= 0x80;
         }
 
         pixelsView.setUint8(dstOffset++, byte);
@@ -248,7 +251,7 @@ const app = createApp({
 
     function downloadBlob(blob, filename) {
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = filename;
       document.body.appendChild(a);
@@ -262,28 +265,32 @@ const app = createApp({
       const canvas = canvasRef.value;
       canvas.toBlob((blob) => {
         if (!blob) return;
-        downloadBlob(blob, 'image.png');
-      }, 'image/png');
+        downloadBlob(blob, "image.png");
+      }, "image/png");
     }
 
     function downloadAsJpg() {
       if (!hasImage.value) return;
       const canvas = canvasRef.value;
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        downloadBlob(blob, 'image.jpg');
-      }, 'image/jpeg', 0.92);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return;
+          downloadBlob(blob, "image.jpg");
+        },
+        "image/jpeg",
+        0.92,
+      );
     }
 
     function downloadAsGb7() {
       if (!hasImage.value) return;
       try {
         const buffer = encodeCanvasToGb7(true);
-        const blob = new Blob([buffer], { type: 'application/octet-stream' });
-        downloadBlob(blob, 'image.gb7');
+        const blob = new Blob([buffer], { type: "application/octet-stream" });
+        downloadBlob(blob, "image.gb7");
       } catch (e) {
         console.error(e);
-        alert('Ошибка при кодировании GB7: ' + e.message);
+        alert("Ошибка при кодировании GB7: " + e.message);
       }
     }
 
@@ -302,4 +309,4 @@ const app = createApp({
 
 const vuetify = createVuetify();
 app.use(vuetify);
-app.mount('#app');
+app.mount("#app");
