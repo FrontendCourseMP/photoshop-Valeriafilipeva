@@ -52,8 +52,26 @@ const app = createApp({
       updateStatusBar();
     }
 
-    function onFileChange(file) {
-      if (!file) return;
+    function onFileChange(value) {
+      let file = null;
+
+      // Если Vuetify передал массив файлов
+      if (Array.isArray(value)) {
+        file = value[0];
+      }
+      // Если передан один файл
+      else if (value instanceof File) {
+        file = value;
+      }
+      // Если передан объект события
+      else if (value?.target?.files?.length) {
+        file = value.target.files[0];
+      }
+
+      if (!file) {
+        console.warn("Файл не получен:", value);
+        return;
+      }
 
       const name = file.name.toLowerCase();
 
