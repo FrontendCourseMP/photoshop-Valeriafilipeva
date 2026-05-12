@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8" />
     <title>Цифровое представление изображения</title>
-    <h2>Лабораторная работа 1</h2>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Vuetify CSS -->
@@ -23,9 +22,10 @@
                 <div class="app-bar-content">
                     <div class="title-block">
                         <v-app-bar-title>Цифровое представление изображения</v-app-bar-title>
+                        <span class="lab-subtitle">Лабораторная работа 1</span>
                         <div class="title-underline"></div>
                     </div>
-                    <span class="text-caption app-bar-subtitle">PNG · JPG · GB7</span>
+                    <span class="text-caption app-bar-subtitle formats">PNG · JPG · GB7</span>
                 </div>
             </v-app-bar>
 
@@ -40,7 +40,7 @@
                                 @change="onFileChange"></v-file-input>
                         </v-col>
 
-                        <v-col cols="12" md="6" class="d-flex flex-wrap justify-end">
+                        <v-col cols="12" md="6" class="download-buttons">
                             <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsPng">
                                 <v-icon start>mdi-download</v-icon>
                                 PNG

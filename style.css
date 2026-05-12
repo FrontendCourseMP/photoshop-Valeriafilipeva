@@ -9,7 +9,7 @@ body {
   height: 100%;
 }
 
-/* Верхняя панель: выравнивание и линия под заголовком */
+/* Верхняя панель: заголовок, подзаголовок, линия */
 .app-bar-content {
   display: flex;
   align-items: center;
@@ -22,18 +22,30 @@ body {
   flex-direction: column;
 }
 
+.lab-subtitle {
+  font-size: 13px;
+  color: #cfcfcf;
+  margin-top: -4px;
+  margin-bottom: 4px;
+}
+
 .title-underline {
-  margin-top: 4px;
+  margin-top: 2px;
   height: 2px;
   width: 220px;
-  background-color: #b5b5b5; /* нейтральная линия под заголовком */
+  background-color: #b5b5b5;
 }
 
 .app-bar-subtitle {
   margin-left: 16px;
 }
 
-/* Делаем app-bar нейтральным, не ярко-синим */
+/* Сдвиг "PNG · JPG · GB7" чуть левее */
+.formats {
+  margin-left: -24px;
+}
+
+/* Нейтральный цвет верхней панели */
 .v-app-bar {
   background-color: #4a4a4a !important;
 }
@@ -57,15 +69,19 @@ canvas {
 }
 
 /* Кнопки скачивания: аккуратные, нейтральные */
+.download-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 .v-btn {
-  margin-left: 8px !important;
-  margin-right: 8px !important;
   box-shadow: none !important;
   background-color: #5a5a5a !important;
   color: #ffffff !important;
 }
 
-/* Отключённые кнопки — визуально спокойные, но явно неактивные */
 .v-btn.v-btn--disabled {
   background-color: #7a7a7a !important;
   color: #e0e0e0 !important;
@@ -84,4 +100,21 @@ canvas {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Адаптивность: телефон / планшет */
+@media (max-width: 960px) {
+  .app-bar-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .formats {
+    margin-left: 0;
+  }
+
+  .download-buttons {
+    justify-content: flex-start;
+  }
 }

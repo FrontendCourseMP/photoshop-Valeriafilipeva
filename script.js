@@ -55,12 +55,19 @@ const app = createApp({
     function onFileChange(value) {
       let file = null;
 
+      // очистка / удаление файла
       if (!value || value.length === 0) {
         hasImage.value = false;
         currentWidth.value = 0;
         currentHeight.value = 0;
         currentColorDepth.value = null;
+        hasMaskFlag.value = false;
         statusText.value = "Изображение не загружено";
+
+        const canvas = canvasRef.value;
+        if (canvas && ctx) {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
         return;
       }
 
