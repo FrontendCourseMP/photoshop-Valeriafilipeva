@@ -18,7 +18,7 @@
     <div id="app">
         <v-app>
             <!-- Верхняя панель -->
-            <v-app-bar color="primary" density="comfortable" flat>
+            <v-app-bar density="comfortable" flat>
                 <div class="app-bar-content">
                     <div class="title-block">
                         <v-app-bar-title>Цифровое представление изображения</v-app-bar-title>
@@ -37,19 +37,19 @@
                         <v-col cols="12" md="6">
                             <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)"
                                 accept=".png,.jpg,.jpeg,.gb7" prepend-icon="mdi-file-image" density="comfortable"
-                                @change="onFileChange"></v-file-input>
+                                @change="onFileChange" clearable></v-file-input>
                         </v-col>
 
                         <v-col cols="12" md="6" class="download-buttons">
-                            <v-btn :disabled="!hasImage" @click="downloadAsPng">
+                            <v-btn :disabled="!hasImage" @click="openSaveDialog('png')">
                                 <v-icon start>mdi-download</v-icon> PNG
                             </v-btn>
 
-                            <v-btn :disabled="!hasImage" @click="downloadAsJpg">
+                            <v-btn :disabled="!hasImage" @click="openSaveDialog('jpg')">
                                 <v-icon start>mdi-download</v-icon> JPG
                             </v-btn>
 
-                            <v-btn :disabled="!hasImage" @click="downloadAsGb7">
+                            <v-btn :disabled="!hasImage" @click="openSaveDialog('gb7')">
                                 <v-icon start>mdi-download</v-icon> GB7
                             </v-btn>
                         </v-col>
@@ -68,8 +68,30 @@
 
             <!-- Строка состояния -->
             <v-footer app class="status-bar" height="32">
-                <div class="status-text">{{ statusText }}</div>
+                <div class="status-text">
+                    {{ statusText }}
+                </div>
             </v-footer>
+
+            <!-- Диалог ввода имени файла -->
+            <v-dialog v-model="showSaveDialog" max-width="400">
+                <v-card>
+                    <v-card-title class="d-flex justify-space-between align-center">
+                        <span>Сохранение файла</span>
+                        <v-btn icon="mdi-close" variant="text" @click="cancelSave"></v-btn>
+                    </v-card-title>
+
+                    <v-card-text>
+                        <v-text-field v-model="filenameInput" label="Имя файла" density="comfortable" variant="outlined"
+                            hide-details="auto"></v-text-field>
+                    </v-card-text>
+
+                    <v-card-actions class="justify-end">
+                        <v-btn variant="text" @click="cancelSave">Отмена</v-btn>
+                        <v-btn color="primary" variant="flat" @click="confirmSave">Сохранить</v-btn>
+                    </v-card-actions>
+                </v-card>
+            </v-dialog>
         </v-app>
     </div>
 

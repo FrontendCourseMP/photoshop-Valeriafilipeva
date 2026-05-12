@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -8,9 +9,8 @@ html, body {
   height: 100%;
 }
 
-/* Верхняя панель */
 .v-app-bar {
-  background-color: #e5e5e5 !important;
+  background-color: #e3e3e3 !important;
   color: #333 !important;
 }
 
@@ -32,13 +32,13 @@ html, body {
   margin-top: -4px;
 }
 
-/* Сдвиг форматов */
+
 .formats {
   margin-left: -20px;
   color: #555;
 }
 
-/* Canvas */
+/* Обёртка для canvas */
 .canvas-wrapper {
   border: 1px solid #ccc;
   background-color: #f3f3f3;
@@ -54,7 +54,7 @@ canvas {
   background-color: #e6e6e6;
 }
 
-/* Кнопки */
+/* Кнопки скачивания */
 .download-buttons {
   display: flex;
   flex-wrap: wrap;

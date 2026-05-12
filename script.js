@@ -14,6 +14,11 @@ const app = createApp({
     const currentColorDepth = ref(null);
     const hasMaskFlag = ref(false);
 
+    // диалог сохранения
+    const showSaveDialog = ref(false);
+    const filenameInput = ref("");
+    const pendingFormat = ref(null); // 'png' | 'jpg' | 'gb7'
+
     let ctx = null;
 
     onMounted(() => {
@@ -296,17 +301,35 @@ const app = createApp({
       URL.revokeObjectURL(url);
     }
 
-    function askFilename(defaultName) {
-      const name = prompt("Введите имя файла:", defaultName);
-      if (!name) return null;
-      return name.trim();
+    // диалог сохранения
+    function openSaveDialog(format) {
+      if (!hasImage.value) return;
+      pendingFormat.value = format;
+      if (format === "png") filenameInput.value = "image.png";
+      if (format === "jpg") filenameInput.value = "image.jpg";
+      if (format === "gb7") filenameInput.value = "image.gb7";
+      showSaveDialog.value = true;
     }
 
-    function downloadAsPng() {
-      if (!hasImage.value) return;
-      const filename = askFilename("image.png");
-      if (!filename) return;
+    function cancelSave() {
+      showSaveDialog.value = false;
+      pendingFormat.value = null;
+      filenameInput.value = "";
+    }
 
+    function confirmSave() {
+      const name = filenameInput.value.trim();
+      if (!name) return;
+      const format = pendingFormat.value;
+      showSaveDialog.value = false;
+
+      if (format === "png") doDownloadPng(name);
+      else if (format === "jpg") doDownloadJpg(name);
+      else if (format === "gb7") doDownloadGb7(name);
+    }
+
+    function doDownloadPng(filename) {
+      if (!hasImage.value) return;
       const canvas = canvasRef.value;
       canvas.toBlob((blob) => {
         if (!blob) return;
@@ -314,11 +337,8 @@ const app = createApp({
       }, "image/png");
     }
 
-    function downloadAsJpg() {
+    function doDownloadJpg(filename) {
       if (!hasImage.value) return;
-      const filename = askFilename("image.jpg");
-      if (!filename) return;
-
       const canvas = canvasRef.value;
       canvas.toBlob(
         (blob) => {
@@ -330,11 +350,8 @@ const app = createApp({
       );
     }
 
-    function downloadAsGb7() {
+    function doDownloadGb7(filename) {
       if (!hasImage.value) return;
-      const filename = askFilename("image.gb7");
-      if (!filename) return;
-
       try {
         const buffer = encodeCanvasToGb7(true);
         const blob = new Blob([buffer], { type: "application/octet-stream" });
@@ -351,9 +368,11 @@ const app = createApp({
       statusText,
       hasImage,
       onFileChange,
-      downloadAsPng,
-      downloadAsJpg,
-      downloadAsGb7,
+      openSaveDialog,
+      cancelSave,
+      confirmSave,
+      showSaveDialog,
+      filenameInput,
     };
   },
 });
