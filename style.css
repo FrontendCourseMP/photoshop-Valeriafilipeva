@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -6,6 +7,35 @@ html, body {
 
 #app {
   height: 100%;
+}
+
+/* Верхняя панель: выравнивание и линия под заголовком */
+.app-bar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.title-block {
+  display: flex;
+  flex-direction: column;
+}
+
+.title-underline {
+  margin-top: 4px;
+  height: 2px;
+  width: 220px;
+  background-color: #b5b5b5; /* нейтральная линия под заголовком */
+}
+
+.app-bar-subtitle {
+  margin-left: 16px;
+}
+
+/* Делаем app-bar нейтральным, не ярко-синим */
+.v-app-bar {
+  background-color: #4a4a4a !important;
 }
 
 /* Обёртка для canvas */
@@ -26,16 +56,20 @@ canvas {
   background-color: #e6e6e6;
 }
 
+/* Кнопки скачивания: аккуратные, нейтральные */
 .v-btn {
   margin-left: 8px !important;
   margin-right: 8px !important;
-  background-color: #5a5a5a !important;
-  color: white !important;
   box-shadow: none !important;
+  background-color: #5a5a5a !important;
+  color: #ffffff !important;
 }
 
-.v-btn:hover {
-  background-color: #6a6a6a !important;
+/* Отключённые кнопки — визуально спокойные, но явно неактивные */
+.v-btn.v-btn--disabled {
+  background-color: #7a7a7a !important;
+  color: #e0e0e0 !important;
+  opacity: 0.5 !important;
 }
 
 /* Строка состояния */

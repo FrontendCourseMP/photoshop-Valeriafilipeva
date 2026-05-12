@@ -55,6 +55,15 @@ const app = createApp({
     function onFileChange(value) {
       let file = null;
 
+      if (!value || value.length === 0) {
+        hasImage.value = false;
+        currentWidth.value = 0;
+        currentHeight.value = 0;
+        currentColorDepth.value = null;
+        statusText.value = "Изображение не загружено";
+        return;
+      }
+
       // Если Vuetify передал массив файлов
       if (Array.isArray(value)) {
         file = value[0];
