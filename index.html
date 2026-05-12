@@ -3,12 +3,12 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Цифровое представление изображения</title>
+    <title>Цифровое представление изображения — ЛР 1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Vuetify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.css" />
-    <!-- Иконки -->
+    <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
 
     <link rel="stylesheet" href="style.css" />
@@ -18,14 +18,14 @@
     <div id="app">
         <v-app>
             <!-- Верхняя панель -->
-            <v-app-bar color="primary" density="comfortable" dark flat>
+            <v-app-bar color="primary" density="comfortable" flat>
                 <div class="app-bar-content">
                     <div class="title-block">
                         <v-app-bar-title>Цифровое представление изображения</v-app-bar-title>
                         <span class="lab-subtitle">Лабораторная работа 1</span>
-                        <div class="title-underline"></div>
                     </div>
-                    <span class="text-caption app-bar-subtitle formats">PNG · JPG · GB7</span>
+
+                    <span class="text-caption formats">PNG · JPG · GB7</span>
                 </div>
             </v-app-bar>
 
@@ -41,19 +41,16 @@
                         </v-col>
 
                         <v-col cols="12" md="6" class="download-buttons">
-                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsPng">
-                                <v-icon start>mdi-download</v-icon>
-                                PNG
+                            <v-btn :disabled="!hasImage" @click="downloadAsPng">
+                                <v-icon start>mdi-download</v-icon> PNG
                             </v-btn>
 
-                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsJpg">
-                                <v-icon start>mdi-download</v-icon>
-                                JPG
+                            <v-btn :disabled="!hasImage" @click="downloadAsJpg">
+                                <v-icon start>mdi-download</v-icon> JPG
                             </v-btn>
 
-                            <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsGb7">
-                                <v-icon start>mdi-download</v-icon>
-                                GB7
+                            <v-btn :disabled="!hasImage" @click="downloadAsGb7">
+                                <v-icon start>mdi-download</v-icon> GB7
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -71,16 +68,14 @@
 
             <!-- Строка состояния -->
             <v-footer app class="status-bar" height="32">
-                <div class="status-text">
-                    {{ statusText }}
-                </div>
+                <div class="status-text">{{ statusText }}</div>
             </v-footer>
         </v-app>
     </div>
 
-    <!-- Vue 3 -->
+    <!-- Vue -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <!-- Vuetify 3 -->
+    <!-- Vuetify -->
     <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.js"></script>
 
     <script src="script.js"></script>

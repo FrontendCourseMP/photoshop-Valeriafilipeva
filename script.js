@@ -28,6 +28,12 @@ const app = createApp({
       }, 0);
     });
 
+    function clearCanvas() {
+      const canvas = canvasRef.value;
+      if (!canvas || !ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
     function updateStatusBar() {
       if (!currentWidth.value || !currentHeight.value) {
         statusText.value = "Изображение не загружено";
@@ -55,7 +61,7 @@ const app = createApp({
     function onFileChange(value) {
       let file = null;
 
-      // очистка / удаление файла
+      // если файл убрали / очистили инпут
       if (!value || value.length === 0) {
         hasImage.value = false;
         currentWidth.value = 0;
@@ -63,11 +69,7 @@ const app = createApp({
         currentColorDepth.value = null;
         hasMaskFlag.value = false;
         statusText.value = "Изображение не загружено";
-
-        const canvas = canvasRef.value;
-        if (canvas && ctx) {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        clearCanvas();
         return;
       }
 
@@ -294,22 +296,34 @@ const app = createApp({
       URL.revokeObjectURL(url);
     }
 
+    function askFilename(defaultName) {
+      const name = prompt("Введите имя файла:", defaultName);
+      if (!name) return null;
+      return name.trim();
+    }
+
     function downloadAsPng() {
       if (!hasImage.value) return;
+      const filename = askFilename("image.png");
+      if (!filename) return;
+
       const canvas = canvasRef.value;
       canvas.toBlob((blob) => {
         if (!blob) return;
-        downloadBlob(blob, "image.png");
+        downloadBlob(blob, filename);
       }, "image/png");
     }
 
     function downloadAsJpg() {
       if (!hasImage.value) return;
+      const filename = askFilename("image.jpg");
+      if (!filename) return;
+
       const canvas = canvasRef.value;
       canvas.toBlob(
         (blob) => {
           if (!blob) return;
-          downloadBlob(blob, "image.jpg");
+          downloadBlob(blob, filename);
         },
         "image/jpeg",
         0.92,
@@ -318,10 +332,13 @@ const app = createApp({
 
     function downloadAsGb7() {
       if (!hasImage.value) return;
+      const filename = askFilename("image.gb7");
+      if (!filename) return;
+
       try {
         const buffer = encodeCanvasToGb7(true);
         const blob = new Blob([buffer], { type: "application/octet-stream" });
-        downloadBlob(blob, "image.gb7");
+        downloadBlob(blob, filename);
       } catch (e) {
         console.error(e);
         alert("Ошибка при кодировании GB7: " + e.message);
