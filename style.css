@@ -10,8 +10,8 @@ html, body {
 
 /* Обёртка для canvas */
 .canvas-wrapper {
-  border: 1px solid #ccc;
-  background-color: #fafafa;
+  border: 1px solid #d0d0d0;
+  background-color: #f3f3f3;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -20,16 +20,30 @@ html, body {
 }
 
 /* Сам холст */
-#imageCanvas {
+canvas {
   max-width: 100%;
   height: auto;
-  background-color: #eee;
+  background-color: #e6e6e6;
+}
+
+.v-btn {
+  margin-left: 8px !important;
+  margin-right: 8px !important;
+  background-color: #5a5a5a !important;
+  color: white !important;
+  box-shadow: none !important;
+}
+
+.v-btn:hover {
+  background-color: #6a6a6a !important;
 }
 
 /* Строка состояния */
 .status-bar {
   padding: 0 12px;
   font-size: 13px;
+  background-color: #e8e8e8 !important;
+  border-top: 1px solid #d0d0d0;
 }
 
 .status-text {

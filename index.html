@@ -9,7 +9,7 @@
     <!-- Vuetify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.css">
 
-    <!-- Иконки для Vuetify (Material Design Icons) -->
+    <!-- Иконки для Vuetify -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css">
 
     <link rel="stylesheet" href="style.css">
@@ -18,7 +18,7 @@
 <body>
     <div id="app">
         <v-app>
-            <!-- Верхняя панель приложения -->
+            <!-- Верхняя панель -->
             <v-app-bar color="primary" density="comfortable" dark>
                 <v-app-bar-title>Цифровое представление изображения — ЛР 1</v-app-bar-title>
                 <span class="text-caption ml-4">PNG · JPG · GB7</span>
@@ -35,20 +35,17 @@
                                 @change="onFileChange"></v-file-input>
                         </v-col>
 
-                        <v-col cols="12" md="6" class="d-flex flex-wrap gap-2 justify-end">
+                        <v-col cols="12" md="6" class="d-flex flex-wrap justify-end">
                             <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsPng">
-                                <v-icon start>mdi-download</v-icon>
-                                PNG
+                                <v-icon start>mdi-download</v-icon> PNG
                             </v-btn>
 
                             <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsJpg">
-                                <v-icon start>mdi-download</v-icon>
-                                JPG
+                                <v-icon start>mdi-download</v-icon> JPG
                             </v-btn>
 
                             <v-btn color="primary" variant="flat" :disabled="!hasImage" @click="downloadAsGb7">
-                                <v-icon start>mdi-download</v-icon>
-                                GB7
+                                <v-icon start>mdi-download</v-icon> GB7
                             </v-btn>
                         </v-col>
                     </v-row>
@@ -77,6 +74,30 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <!-- Vuetify 3 -->
     <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.js"></script>
+
+    <!-- Тема + твой script.js -->
+    <script>
+        const { createApp } = Vue;
+        const { createVuetify } = Vuetify;
+
+        const vuetify = createVuetify({
+            theme: {
+                defaultTheme: 'customTheme',
+                themes: {
+                    customTheme: {
+                        dark: false,
+                        colors: {
+                            primary: '#4a4a4a',      // нейтральный графитовый
+                            surface: '#f5f5f5',
+                            background: '#f0f0f0'
+                        }
+                    }
+                }
+            }
+        });
+
+        createApp(App).use(vuetify).mount('#app');
+    </script>
 
     <script src="script.js"></script>
 </body>
