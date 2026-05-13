@@ -35,9 +35,9 @@
                     <!-- Панель управления -->
                     <v-row class="mb-4" align="center" justify="space-between">
                         <v-col cols="12" md="6">
-                            <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)"
-                                accept=".png,.jpg,.jpeg,.gb7" prepend-icon="mdi-file-image" density="comfortable"
-                                @change="onFileChange" clearable></v-file-input>
+                            <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)" accept=".png,.jpg,.jpeg,.gb7"
+                                prepend-icon="mdi-file-image" density="comfortable" clearable @update:model-value="onFileChange"></v-file-input>
+
                         </v-col>
 
                         <v-col cols="12" md="6" class="download-buttons">

@@ -35,8 +35,16 @@ const app = createApp({
 
     function clearCanvas() {
       const canvas = canvasRef.value;
-      if (!canvas || !ctx) return;
+      if (!canvas) return;
+
+      const ctx = canvas.getContext("2d");
+
+      // Полная очистка
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Возвращаем холст к исходному размеру (если нужно)
+      canvas.width = 400;
+      canvas.height = 300;
     }
 
     function updateStatusBar() {
@@ -66,28 +74,26 @@ const app = createApp({
     function onFileChange(value) {
       let file = null;
 
-      // если файл убрали / очистили инпут
-      if (!value || value.length === 0) {
+      // --- 1) Если файл убрали / очистили инпут ---
+      if (!value || (Array.isArray(value) && value.length === 0)) {
         hasImage.value = false;
         currentWidth.value = 0;
         currentHeight.value = 0;
         currentColorDepth.value = null;
         hasMaskFlag.value = false;
         statusText.value = "Изображение не загружено";
-        clearCanvas();
+
+        clearCanvas(); // ← очищаем холст
+
         return;
       }
 
-      // Если Vuetify передал массив файлов
+      // --- 2) Определяем файл ---
       if (Array.isArray(value)) {
         file = value[0];
-      }
-      // Если передан один файл
-      else if (value instanceof File) {
+      } else if (value instanceof File) {
         file = value;
-      }
-      // Если передан объект события
-      else if (value?.target?.files?.length) {
+      } else if (value?.target?.files?.length) {
         file = value.target.files[0];
       }
 
@@ -98,6 +104,7 @@ const app = createApp({
 
       const name = file.name.toLowerCase();
 
+      // --- 3) Определяем тип файла ---
       if (
         name.endsWith(".png") ||
         name.endsWith(".jpg") ||
