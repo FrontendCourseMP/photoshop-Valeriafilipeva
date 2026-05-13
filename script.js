@@ -312,9 +312,11 @@ const app = createApp({
     function openSaveDialog(format) {
       if (!hasImage.value) return;
       pendingFormat.value = format;
-      if (format === "png") filenameInput.value = "image.png";
-      if (format === "jpg") filenameInput.value = "image.jpg";
-      if (format === "gb7") filenameInput.value = "image.gb7";
+
+      if (format === "png") filenameInput.value = "image";
+      if (format === "jpg") filenameInput.value = "image";
+      if (format === "gb7") filenameInput.value = "image";
+
       showSaveDialog.value = true;
     }
 
@@ -324,15 +326,33 @@ const app = createApp({
       filenameInput.value = "";
     }
 
+    function ensureExtension(filename, format) {
+      const extMap = {
+        png: ".png",
+        jpg: ".jpg",
+        gb7: ".gb7",
+      };
+
+      const ext = extMap[format];
+      const name = filename.trim();
+
+      if (!name) return "";
+
+      return name.toLowerCase().endsWith(ext) ? name : name + ext;
+    }
+
     function confirmSave() {
       const name = filenameInput.value.trim();
       if (!name) return;
+
       const format = pendingFormat.value;
+      const finalName = ensureExtension(name, format);
+
       showSaveDialog.value = false;
 
-      if (format === "png") doDownloadPng(name);
-      else if (format === "jpg") doDownloadJpg(name);
-      else if (format === "gb7") doDownloadGb7(name);
+      if (format === "png") doDownloadPng(finalName);
+      else if (format === "jpg") doDownloadJpg(finalName);
+      else if (format === "gb7") doDownloadGb7(finalName);
     }
 
     function doDownloadPng(filename) {
