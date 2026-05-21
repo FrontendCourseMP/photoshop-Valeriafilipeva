@@ -108,4 +108,97 @@ canvas {
   .status-text {
     font-size: 12px;
   }
+
+  .tools-buttons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.channels-panel {
+  border: 1px solid #ccc;
+  background-color: #f7f7f7;
+  padding: 8px 10px;
+  border-radius: 4px;
+}
+
+.channels-title {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.channels-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.channel-item {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #fafafa;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+}
+
+.channel-item--active {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.4);
+  background-color: #eef5ff;
+}
+
+.channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.channel-label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.channel-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background-color: #e6e6e6;
+}
+
+.info-panel {
+  border: 1px solid #ccc;
+  background-color: #f7f7f7;
+  padding: 8px 10px;
+  border-radius: 4px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.info-content {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.info-empty {
+  font-size: 13px;
+  color: #666;
+}
+
+/* адаптив для панелей */
+@media (max-width: 960px) {
+  .channels-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
 }

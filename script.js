@@ -27,6 +27,27 @@ const app = createApp({
     // Флаг наличия маски в GB7
     const hasMaskFlag = ref(false);
 
+    // Оригинальные пиксели изображения (никогда не трогаем)
+    const originalImageData = ref(null);
+
+    // Состояние каналов
+    const channelR = ref(true);
+    const channelG = ref(true);
+    const channelB = ref(true);
+    const channelA = ref(true);
+
+    // Миниатюры каналов
+    const channelRRef = ref(null);
+    const channelGRef = ref(null);
+    const channelBRef = ref(null);
+    const channelARef = ref(null);
+
+    // Активный инструмент: null | 'pipette'
+    const activeTool = ref(null);
+
+    // Данные пипетки
+    const pipetteData = ref(null);
+
     // Диалог сохранения
     const showSaveDialog = ref(false);
 
@@ -54,6 +75,122 @@ const app = createApp({
       }, 0);
     });
 
+    function updateChannelPreviews() {
+      if (!originalImageData.value) return;
+
+      const src = originalImageData.value.data;
+      const width = originalImageData.value.width;
+      const height = originalImageData.value.height;
+
+      function fillChannelCanvas(canvasRef, channelIndex) {
+        const canvas = canvasRef.value;
+        if (!canvas) return;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        const cctx = canvas.getContext("2d");
+        const img = cctx.createImageData(width, height);
+        const dst = img.data;
+
+        for (let i = 0; i < width * height; i++) {
+          const si = i * 4;
+          const di = i * 4;
+
+          const r = src[si];
+          const g = src[si + 1];
+          const b = src[si + 2];
+          const a = src[si + 3];
+
+          let value = 0;
+          if (channelIndex === 0) value = r;
+          if (channelIndex === 1) value = g;
+          if (channelIndex === 2) value = b;
+          if (channelIndex === 3) value = a;
+
+          dst[di] = value;
+          dst[di + 1] = value;
+          dst[di + 2] = value;
+          dst[di + 3] = 255;
+        }
+
+        cctx.putImageData(img, 0, 0);
+      }
+
+      fillChannelCanvas(channelRRef, 0);
+      fillChannelCanvas(channelGRef, 1);
+      fillChannelCanvas(channelBRef, 2);
+      fillChannelCanvas(channelARef, 3);
+    }
+
+    function applyChannelsToCanvas() {
+      if (!originalImageData.value || !ctx) return;
+
+      const width = originalImageData.value.width;
+      const height = originalImageData.value.height;
+      const src = originalImageData.value.data;
+
+      const imageData = ctx.createImageData(width, height);
+      const dst = imageData.data;
+
+      const useR = channelR.value;
+      const useG = channelG.value;
+      const useB = channelB.value;
+      const useA = channelA.value;
+
+      for (let i = 0; i < width * height; i++) {
+        const si = i * 4;
+        const di = i * 4;
+
+        const r0 = src[si];
+        const g0 = src[si + 1];
+        const b0 = src[si + 2];
+        const a0 = src[si + 3];
+
+        let r = useR ? r0 : 0;
+        let g = useG ? g0 : 0;
+        let b = useB ? b0 : 0;
+        let a;
+
+        if (useA) {
+          if (!useR && !useG && !useB) {
+            // оставлен только альфа-канал — показываем маску прозрачности
+            const gray = a0;
+            r = gray;
+            g = gray;
+            b = gray;
+            a = 255;
+          } else {
+            a = a0;
+          }
+        } else {
+          // альфа выключен — считаем все непрозрачным
+          a = 255;
+        }
+
+        dst[di] = r;
+        dst[di + 1] = g;
+        dst[di + 2] = b;
+        dst[di + 3] = a;
+      }
+
+      const canvas = canvasRef.value;
+      canvas.width = width;
+      canvas.height = height;
+      ctx.putImageData(imageData, 0, 0);
+    }
+
+    function toggleChannel(channel) {
+      if (!originalImageData.value) return;
+
+      if (channel === "r") channelR.value = !channelR.value;
+      if (channel === "g") channelG.value = !channelG.value;
+      if (channel === "b") channelB.value = !channelB.value;
+      if (channel === "a") channelA.value = !channelA.value;
+
+      applyChannelsToCanvas();
+    }
+
     // Очищает canvas и возвращает его к стандартному размеру
     // Используется, когда пользователь убирает файл или сбрасывает изображение
     function clearCanvas() {
@@ -64,6 +201,12 @@ const app = createApp({
 
       // Полная очистка области рисования
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      originalImageData.value = null;
+      channelR.value = true;
+      channelG.value = true;
+      channelB.value = true;
+      channelA.value = true;
+      pipetteData.value = null;
 
       // Возвращаем холст к исходному размеру
       canvas.width = 400;
@@ -93,6 +236,24 @@ const app = createApp({
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0);
+
+      // сохраняем оригинальные пиксели
+      originalImageData.value = ctx.getImageData(
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      );
+
+      // сбрасываем каналы
+      channelR.value = true;
+      channelG.value = true;
+      channelB.value = true;
+      channelA.value = true;
+
+      // обновляем миниатюры и применяем каналы
+      updateChannelPreviews();
+      applyChannelsToCanvas();
 
       hasImage.value = true;
       updateStatusBar();
@@ -253,7 +414,6 @@ const app = createApp({
         // & 10000000 → "возьми только маску" → 10000000
         // // & 01111111 → "возьми только цвет" → 01110110
 
-
         // Преобразуем 7-битный серый в 8-битный (0–255)
         const gray = Math.round((gray7 / 127) * 255);
 
@@ -305,6 +465,24 @@ const app = createApp({
         ctx.putImageData(imageData, 0, 0);
         //Рисует изображение на canvas в позиции X=0, Y=0 (левый верхний угол)
 
+        // сохраняем оригинальные пиксели
+        originalImageData.value = ctx.getImageData(
+          0,
+          0,
+          canvas.width,
+          canvas.height,
+        );
+
+        // сбрасываем каналы
+        channelR.value = true;
+        channelG.value = true;
+        channelB.value = true;
+        channelA.value = true;
+
+        // обновляем миниатюры и применяем каналы
+        updateChannelPreviews();
+        applyChannelsToCanvas();
+
         // Сохраняем информацию о маске
         hasMaskFlag.value = maskFlag;
 
@@ -355,8 +533,8 @@ const app = createApp({
       // Записываем флаг
       view.setUint8(5, flag);
       // uint8:   байт  5 ← флаг (0-255)
-     // uint16: байты 6-7 ← ширина (0-65535)
-     // uint16: байты 8-9 ← высота (0-65535)
+      // uint16: байты 6-7 ← ширина (0-65535)
+      // uint16: байты 8-9 ← высота (0-65535)
 
       // Записываем ширину
       view.setUint16(6, width, false);
@@ -384,7 +562,7 @@ const app = createApp({
 
       // Берем пиксели с canvas
       const imageData = ctx.getImageData(0, 0, width, height);
-      // !!!!!!!! 
+      // !!!!!!!!
 
       // Исходный массив RGBA
       const src = imageData.data;
@@ -569,18 +747,122 @@ const app = createApp({
       }
     }
 
+    function togglePipette() {
+      if (!hasImage.value) return;
+      activeTool.value = activeTool.value === "pipette" ? null : "pipette";
+    }
+
+    function srgbToLinear(c) {
+      c = c / 255;
+      return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    }
+
+    function rgbToXyz(r, g, b) {
+      const R = srgbToLinear(r);
+      const G = srgbToLinear(g);
+      const B = srgbToLinear(b);
+
+      const X = R * 0.4124564 + G * 0.3575761 + B * 0.1804375;
+      const Y = R * 0.2126729 + G * 0.7151522 + B * 0.072175;
+      const Z = R * 0.0193339 + G * 0.119192 + B * 0.9503041;
+
+      return { X, Y, Z };
+    }
+
+    function fLab(t) {
+      const delta = 6 / 29;
+      return t > Math.pow(delta, 3)
+        ? Math.cbrt(t)
+        : t / (3 * delta * delta) + 4 / 29;
+    }
+
+    function xyzToLab(X, Y, Z) {
+      // белая точка D65
+      const Xn = 0.95047;
+      const Yn = 1.0;
+      const Zn = 1.08883;
+
+      const fx = fLab(X / Xn);
+      const fy = fLab(Y / Yn);
+      const fz = fLab(Z / Zn);
+
+      const L = 116 * fy - 16;
+      const a = 500 * (fx - fy);
+      const b = 200 * (fy - fz);
+
+      return { L, a, b };
+    }
+
+    function rgbToLab(r, g, b) {
+      const { X, Y, Z } = rgbToXyz(r, g, b);
+      return xyzToLab(X, Y, Z);
+    }
+
+    function onCanvasClick(event) {
+      if (activeTool.value !== "pipette") return;
+      if (!originalImageData.value || !hasImage.value) return;
+
+      const canvas = canvasRef.value;
+      const rect = canvas.getBoundingClientRect();
+
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+
+      const x = Math.floor((event.clientX - rect.left) * scaleX);
+      const y = Math.floor((event.clientY - rect.top) * scaleY);
+
+      if (x < 0 || y < 0 || x >= canvas.width || y >= canvas.height) return;
+
+      const src = originalImageData.value.data;
+      const index = (y * canvas.width + x) * 4;
+
+      const r = src[index];
+      const g = src[index + 1];
+      const b = src[index + 2];
+
+      const lab = rgbToLab(r, g, b);
+
+      pipetteData.value = {
+        x,
+        y,
+        r,
+        g,
+        b,
+        L: lab.L,
+        a: lab.a,
+        b: lab.b,
+      };
+    }
+
     return {
-      canvasRef,
-      selectedFile,
-      statusText,
-      hasImage,
-      onFileChange,
-      openSaveDialog,
-      cancelSave,
-      confirmSave,
-      showSaveDialog,
-      filenameInput,
-    };
+  canvasRef,
+  selectedFile,
+  statusText,
+  hasImage,
+  onFileChange,
+  openSaveDialog,
+  cancelSave,
+  confirmSave,
+  showSaveDialog,
+  filenameInput,
+
+  // каналы
+  channelR,
+  channelG,
+  channelB,
+  channelA,
+  channelRRef,
+  channelGRef,
+  channelBRef,
+  channelARef,
+  toggleChannel,
+
+  // пипетка
+  activeTool,
+  togglePipette,
+  pipetteData,
+  onCanvasClick,
+};
   },
 });
 
