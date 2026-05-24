@@ -1,17 +1,13 @@
-html,
+/* ====== БАЗОВЫЙ СТИЛЬ ПРИЛОЖЕНИЯ ====== */
+
 body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+  background: #1e1e1e;
+  color: #e0e0e0;
+  font-family: "Inter", sans-serif;
 }
 
-#app {
-  height: 100%;
-}
-
-.v-app-bar {
-  background-color: #e3e3e3 !important;
-  color: #333 !important;
+.v-application {
+  background: #1e1e1e !important;
 }
 
 .app-bar-content {
@@ -27,178 +23,152 @@ body {
 }
 
 .lab-subtitle {
-  font-size: 13px;
-  color: #777;
+  font-size: 12px;
+  opacity: 0.7;
   margin-top: -4px;
 }
 
-
 .formats {
-  margin-left: -20px;
-  color: #555;
+  opacity: 0.7;
 }
 
-/* Обёртка для canvas */
+/* ====== ПАНЕЛЬ ИНСТРУМЕНТОВ ====== */
+
+.tools-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #bdbdbd;
+  letter-spacing: 0.3px;
+}
+
+.v-btn {
+  text-transform: none !important;
+}
+
+/* ====== ХОЛСТ ====== */
+
 .canvas-wrapper {
-  border: 1px solid #ccc;
-  background-color: #f3f3f3;
-  min-height: 300px;
+  width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  background: #2b2b2b;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
 }
 
 canvas {
   max-width: 100%;
   height: auto;
-  background-color: #e6e6e6;
+  image-rendering: pixelated;
+  background: #000;
 }
 
-/* Кнопки скачивания */
-.download-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.v-btn {
-  background-color: #5a5a5a !important;
-  color: white !important;
-  box-shadow: none !important;
-}
-
-.v-btn.v-btn--disabled {
-  background-color: #9a9a9a !important;
-  color: #e0e0e0 !important;
-  opacity: 0.5 !important;
-}
-
-/* Строка состояния */
-.status-bar {
-  background-color: #e8e8e8 !important;
-  border-top: 1px solid #ccc;
-  padding: 0 12px;
-}
-
-.status-text {
-  font-size: 13px;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Адаптивность */
-@media (max-width: 960px) {
-  .app-bar-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-  }
-
-  .formats {
-    margin-left: 0;
-  }
-
-  .download-buttons {
-    justify-content: center;
-  }
-
-  .status-text {
-    font-size: 12px;
-  }
-
-  .tools-buttons {
-  display: flex;
-  justify-content: flex-end;
-}
+/* ====== ПАНЕЛЬ КАНАЛОВ ====== */
 
 .channels-panel {
-  border: 1px solid #ccc;
-  background-color: #f7f7f7;
-  padding: 8px 10px;
-  border-radius: 4px;
+  background: #2b2b2b;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
 }
 
 .channels-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #e0e0e0;
 }
 
 .channels-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .channel-item {
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  background-color: #fafafa;
+  background: #1f1f1f;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  padding: 6px;
   cursor: pointer;
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  transition: border-color 0.15s, box-shadow 0.15s, background-color 0.15s;
+  transition: 0.15s ease;
+}
+
+.channel-item:hover {
+  border-color: #5c5c5c;
 }
 
 .channel-item--active {
-  border-color: #1976d2;
-  box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.4);
-  background-color: #eef5ff;
+  border-color: #42a5f5;
+  box-shadow: 0 0 0 1px #42a5f5;
 }
 
 .channel-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
 .channel-label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e0e0e0;
 }
 
 .channel-canvas {
   width: 100%;
   height: auto;
-  display: block;
-  background-color: #e6e6e6;
+  background: #000;
+  border-radius: 4px;
 }
 
+/* ====== ПАНЕЛЬ ИНФОРМАЦИИ ====== */
+
 .info-panel {
-  border: 1px solid #ccc;
-  background-color: #f7f7f7;
-  padding: 8px 10px;
-  border-radius: 4px;
-  min-height: 100px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  background: #2b2b2b;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #3a3a3a;
+  min-height: 180px;
 }
 
 .info-title {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #e0e0e0;
 }
 
 .info-content {
-  font-size: 13px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .info-empty {
-  font-size: 13px;
-  color: #666;
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 12px;
 }
 
-/* адаптив для панелей */
-@media (max-width: 960px) {
-  .channels-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+/* ====== КНОПКИ СКАЧИВАНИЯ ====== */
+
+.download-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
+
+/* ====== СТРОКА СОСТОЯНИЯ ====== */
+
+.status-bar {
+  background: #111 !important;
+  border-top: 1px solid #333;
+}
+
+.status-text {
+  font-size: 13px;
+  opacity: 0.8;
+  padding-left: 12px;
 }

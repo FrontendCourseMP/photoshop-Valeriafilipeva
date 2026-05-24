@@ -17,6 +17,7 @@
 <body>
     <div id="app">
         <v-app>
+
             <!-- Верхняя панель -->
             <v-app-bar density="comfortable" flat>
                 <div class="app-bar-content">
@@ -32,14 +33,42 @@
             <!-- Основная область -->
             <v-main>
                 <v-container class="py-4" fluid>
-                    <!-- Панель управления -->
+
+                    <!-- Панель инструментов + загрузка + скачивание -->
                     <v-row class="mb-4" align="center" justify="space-between">
+
+                        <!-- Панель инструментов -->
+                        <v-col cols="12" md="3">
+                            <div class="tools-panel-title">Инструменты</div>
+
+                            <v-menu>
+                                <template #activator="{ props }">
+                                    <v-btn v-bind="props" variant="outlined" density="comfortable">
+                                        <v-icon start>mdi-wrench</v-icon>
+                                        Панель инструментов
+                                    </v-btn>
+                                </template>
+
+                                <v-list>
+                                    <v-list-item :disabled="!hasImage" @click="togglePipette">
+                                        <v-list-item-title>
+                                            <v-icon start small>mdi-eyedropper</v-icon>
+                                            Пипетка
+                                            <span v-if="activeTool === 'pipette'"> (активна)</span>
+                                        </v-list-item-title>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-col>
+
+                        <!-- Загрузка изображения -->
                         <v-col cols="12" md="5">
                             <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)"
                                 accept=".png,.jpg,.jpeg,.gb7" prepend-icon="mdi-file-image" density="comfortable"
                                 clearable @update:model-value="onFileChange"></v-file-input>
                         </v-col>
 
+                        <!-- Кнопки скачивания -->
                         <v-col cols="12" md="4" class="download-buttons">
                             <v-btn :disabled="!hasImage" @click="openSaveDialog('png')">
                                 <v-icon start>mdi-download</v-icon> PNG
@@ -53,14 +82,6 @@
                                 <v-icon start>mdi-download</v-icon> GB7
                             </v-btn>
                         </v-col>
-
-                        <v-col cols="12" md="3" class="tools-buttons">
-                            <v-btn :disabled="!hasImage" :variant="activeTool === 'pipette' ? 'flat' : 'outlined'"
-                                @click="togglePipette">
-                                <v-icon start>mdi-eyedropper</v-icon>
-                                Пипетка
-                            </v-btn>
-                        </v-col>
                     </v-row>
 
                     <!-- Холст -->
@@ -72,53 +93,59 @@
                         </v-col>
                     </v-row>
 
-                    <!-- Панель режимов каналов + инфо пипетки -->
+                    <!-- Панель каналов + панель информации -->
                     <v-row class="mt-4" align="stretch">
+
+                        <!-- Панель каналов -->
                         <v-col cols="12" md="6">
                             <div class="channels-panel">
-                                <div class="channels-title">Режимы каналов</div>
+                                <div class="channels-title">Каналы</div>
+
                                 <div class="channels-grid">
-                                    <div class="channel-item" :class="{ 'channel-item--active': activeMode === 'gray' }"
-                                        @click="setMode('gray')">
+
+                                    <div class="channel-item" :class="{ 'channel-item--active': channelR }"
+                                        @click="toggleChannel('r')">
                                         <div class="channel-header">
-                                            <span class="channel-label">Grayscale</span>
+                                            <span class="channel-label">R</span>
                                         </div>
-                                        <canvas ref="modeGrayRef" class="channel-canvas"></canvas>
+                                        <canvas ref="channelRRef" class="channel-canvas"></canvas>
                                     </div>
 
-                                    <div class="channel-item"
-                                        :class="{ 'channel-item--active': activeMode === 'grayAlpha' }"
-                                        @click="setMode('grayAlpha')">
+                                    <div class="channel-item" :class="{ 'channel-item--active': channelG }"
+                                        @click="toggleChannel('g')">
                                         <div class="channel-header">
-                                            <span class="channel-label">Grayscale + Alpha</span>
+                                            <span class="channel-label">G</span>
                                         </div>
-                                        <canvas ref="modeGrayAlphaRef" class="channel-canvas"></canvas>
+                                        <canvas ref="channelGRef" class="channel-canvas"></canvas>
                                     </div>
 
-                                    <div class="channel-item" :class="{ 'channel-item--active': activeMode === 'rgb' }"
-                                        @click="setMode('rgb')">
+                                    <div class="channel-item" :class="{ 'channel-item--active': channelB }"
+                                        @click="toggleChannel('b')">
                                         <div class="channel-header">
-                                            <span class="channel-label">RGB</span>
+                                            <span class="channel-label">B</span>
                                         </div>
-                                        <canvas ref="modeRgbRef" class="channel-canvas"></canvas>
+                                        <canvas ref="channelBRef" class="channel-canvas"></canvas>
                                     </div>
 
-                                    <div class="channel-item" :class="{ 'channel-item--active': activeMode === 'rgba' }"
-                                        @click="setMode('rgba')">
+                                    <div class="channel-item" :class="{ 'channel-item--active': channelA }"
+                                        @click="toggleChannel('a')">
                                         <div class="channel-header">
-                                            <span class="channel-label">RGB + Alpha</span>
+                                            <span class="channel-label">A</span>
                                         </div>
-                                        <canvas ref="modeRgbaRef" class="channel-canvas"></canvas>
+                                        <canvas ref="channelARef" class="channel-canvas"></canvas>
                                     </div>
+
                                 </div>
                             </div>
                         </v-col>
 
+                        <!-- Панель информации о пикселе -->
                         <v-col cols="12" md="6">
                             <div class="info-panel">
                                 <div class="info-title">Информация о пикселе</div>
 
-                                <div v-if="pipetteData" class="info-content">
+                                <!-- Пипетка активна и есть данные -->
+                                <div v-if="activeTool === 'pipette' && pipetteData" class="info-content">
                                     <div><strong>Координаты:</strong> X = {{ pipetteData.x }}, Y = {{ pipetteData.y }}
                                     </div>
                                     <div><strong>RGB:</strong> {{ pipetteData.r }}, {{ pipetteData.g }}, {{
@@ -131,11 +158,18 @@
                                     </div>
                                 </div>
 
+                                <!-- Пипетка активна, но по изображению ещё не кликали -->
+                                <div v-else-if="activeTool === 'pipette'" class="info-empty">
+                                    Кликните по изображению на холсте, чтобы получить данные пикселя.
+                                </div>
+
+                                <!-- Пипетка не выбрана -->
                                 <div v-else class="info-empty">
-                                    Выберите инструмент «Пипетка» и кликните по изображению.
+                                    Выберите инструмент «Пипетка» в панели инструментов.
                                 </div>
                             </div>
                         </v-col>
+
                     </v-row>
 
                 </v-container>
@@ -167,6 +201,7 @@
                     </v-card-actions>
                 </v-card>
             </v-dialog>
+
         </v-app>
     </div>
 
