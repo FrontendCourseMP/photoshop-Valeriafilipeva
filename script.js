@@ -6,7 +6,7 @@ const GB7_SIGNATURE = [0x47, 0x42, 0x37, 0x1d];
 createApp({
   setup() {
     const menuOpen = ref(false);
-    const showChannelsPanel = ref(true);
+    const showChannelsPanel = ref(false);
 
     const canvasRef = ref(null);
     const channelRRef = ref(null);
@@ -15,6 +15,8 @@ createApp({
     const channelARef = ref(null);
 
     const selectedFile = ref(null);
+    const fileInputKey = ref(0);
+
     const hasImage = ref(false);
     const statusText = ref("Изображение не загружено");
 
@@ -41,37 +43,33 @@ createApp({
 
     onMounted(async () => {
       await nextTick();
-      const canvas = canvasRef.value;
-      if (canvas) {
-        ctx = canvas.getContext("2d");
-      }
-      renderEmptyCanvas();
+      ctx = canvasRef.value.getContext("2d");
+      clearCanvasOnly();
       updateStatusBar();
     });
 
     function updateStatusBar() {
-      if (!currentWidth.value || !currentHeight.value) {
+      if (!hasImage.value) {
         statusText.value = "Изображение не загружено";
         return;
       }
-      const alphaText = hasMaskFlag.value ? " | маска: есть" : " | маска: нет";
-      statusText.value = `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${currentColorDepth.value}${alphaText}`;
+      statusText.value = `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${currentColorDepth.value}`;
     }
 
-    function renderEmptyCanvas() {
+    function clearCanvasOnly() {
       if (!ctx || !canvasRef.value) return;
       const canvas = canvasRef.value;
-      canvas.width = 640;
-      canvas.height = 420;
+      canvas.width = 700;
+      canvas.height = 480;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#9a9a9a";
+      ctx.fillStyle = "#8a8a8a";
       ctx.font = "16px Arial";
       ctx.fillText("Загрузите изображение", 20, 30);
     }
 
-    function clearState() {
+    function resetAllState() {
       hasImage.value = false;
       currentWidth.value = 0;
       currentHeight.value = 0;
@@ -79,12 +77,25 @@ createApp({
       hasMaskFlag.value = false;
       originalImageData.value = null;
       pipetteData.value = null;
+      activeTool.value = null;
       channelR.value = true;
       channelG.value = true;
       channelB.value = true;
       channelA.value = true;
       statusText.value = "Изображение не загружено";
-      renderEmptyCanvas();
+      clearCanvasOnly();
+      updateChannelPreviewsEmpty();
+    }
+
+    function updateChannelPreviewsEmpty() {
+      [channelRRef, channelGRef, channelBRef, channelARef].forEach((r) => {
+        if (!r.value) return;
+        const c = r.value;
+        c.width = 1;
+        c.height = 1;
+        const cctx = c.getContext("2d");
+        cctx.clearRect(0, 0, 1, 1);
+      });
     }
 
     function buildImageDataByChannels(srcImageData) {
@@ -94,31 +105,24 @@ createApp({
       const imageData = ctx.createImageData(width, height);
       const dst = imageData.data;
 
-      const useR = channelR.value;
-      const useG = channelG.value;
-      const useB = channelB.value;
-      const useA = channelA.value;
-
       for (let i = 0; i < width * height; i++) {
         const si = i * 4;
         const di = i * 4;
-
-        const r = src[si];
-        const g = src[si + 1];
-        const b = src[si + 2];
-        const a = src[si + 3];
-
-        dst[di] = useR ? r : 0;
-        dst[di + 1] = useG ? g : 0;
-        dst[di + 2] = useB ? b : 0;
-        dst[di + 3] = useA ? a : 255;
+        dst[di] = channelR.value ? src[si] : 0;
+        dst[di + 1] = channelG.value ? src[si + 1] : 0;
+        dst[di + 2] = channelB.value ? src[si + 2] : 0;
+        dst[di + 3] = channelA.value ? src[si + 3] : 255;
       }
 
       return imageData;
     }
 
     function drawMainCanvas() {
-      if (!ctx || !canvasRef.value || !originalImageData.value) return;
+      if (!ctx || !canvasRef.value) return;
+      if (!originalImageData.value) {
+        clearCanvasOnly();
+        return;
+      }
       const canvas = canvasRef.value;
       canvas.width = originalImageData.value.width;
       canvas.height = originalImageData.value.height;
@@ -128,13 +132,12 @@ createApp({
 
     function makeChannelPreview(refCanvas, mode) {
       if (!originalImageData.value || !refCanvas.value) return;
-
       const src = originalImageData.value;
       const canvas = refCanvas.value;
-      canvas.width = Math.max(1, Math.min(240, src.width));
+      canvas.width = Math.max(1, Math.min(220, src.width));
       canvas.height = Math.max(1, Math.round((src.height / src.width) * canvas.width));
-
       const cctx = canvas.getContext("2d");
+
       const temp = cctx.createImageData(src.width, src.height);
       const s = src.data;
       const d = temp.data;
@@ -142,18 +145,11 @@ createApp({
       for (let i = 0; i < src.width * src.height; i++) {
         const si = i * 4;
         const di = i * 4;
-        const r = s[si];
-        const g = s[si + 1];
-        const b = s[si + 2];
-        const a = s[si + 3];
-
         let v = 0;
-
-        if (mode === "r") v = r;
-        if (mode === "g") v = g;
-        if (mode === "b") v = b;
-        if (mode === "a") v = a;
-
+        if (mode === "r") v = s[si];
+        if (mode === "g") v = s[si + 1];
+        if (mode === "b") v = s[si + 2];
+        if (mode === "a") v = s[si + 3];
         d[di] = v;
         d[di + 1] = v;
         d[di + 2] = v;
@@ -176,27 +172,25 @@ createApp({
     }
 
     function drawImageToCanvas(image) {
-      if (!ctx || !canvasRef.value) return;
       const canvas = canvasRef.value;
       canvas.width = image.width;
       canvas.height = image.height;
-
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(image, 0, 0);
-
       originalImageData.value = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      drawMainCanvas();
-      updateAllPreviews();
-
       currentWidth.value = image.width;
       currentHeight.value = image.height;
       hasImage.value = true;
+      drawMainCanvas();
+      updateAllPreviews();
       updateStatusBar();
     }
 
     function onFileChange(value) {
       if (!value || (Array.isArray(value) && value.length === 0)) {
-        clearState();
+        selectedFile.value = null;
+        fileInputKey.value++;
+        resetAllState();
         return;
       }
 
@@ -210,6 +204,8 @@ createApp({
         loadGb7Image(file);
       } else {
         alert("Поддерживаются только PNG, JPG и GB7");
+        selectedFile.value = null;
+        fileInputKey.value++;
       }
     }
 
@@ -397,6 +393,11 @@ createApp({
       menuOpen.value = false;
     }
 
+    function toggleChannelsPanel() {
+      showChannelsPanel.value = !showChannelsPanel.value;
+      menuOpen.value = false;
+    }
+
     function toggleChannel(ch) {
       if (ch === "r") channelR.value = !channelR.value;
       if (ch === "g") channelG.value = !channelG.value;
@@ -422,7 +423,6 @@ createApp({
       const Xn = 0.95047;
       const Yn = 1.0;
       const Zn = 1.08883;
-
       const delta = 6 / 29;
       const f = (t) => (t > Math.pow(delta, 3) ? Math.cbrt(t) : t / (3 * delta * delta) + 4 / 29);
 
@@ -474,6 +474,7 @@ createApp({
       channelBRef,
       channelARef,
       selectedFile,
+      fileInputKey,
       hasImage,
       statusText,
       onFileChange,
@@ -491,6 +492,7 @@ createApp({
       channelB,
       channelA,
       toggleChannel,
+      toggleChannelsPanel,
     };
   },
 }).use(createVuetify()).mount("#app");
