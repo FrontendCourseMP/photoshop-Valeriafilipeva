@@ -1,5 +1,4 @@
 :root {
-  --bg: #ececec;
   --panel: #f6f6f6;
   --line: #cbcbcb;
   --text: #2f2f2f;
@@ -7,14 +6,17 @@
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(180deg, #f0f0f0 0%, #e4e4e4 100%);
   color: var(--text);
   font-family: Inter, Roboto, Arial, sans-serif;
 }
+
+#app { min-height: 100vh; }
 
 .topbar {
   background: #f8f8f8 !important;
@@ -36,9 +38,7 @@ body {
   background: white;
 }
 
-.drawer {
-  background: #f9f9f9;
-}
+.drawer { background: #f9f9f9; }
 
 .drawer-title {
   padding: 16px 16px 8px;
@@ -46,9 +46,13 @@ body {
 }
 
 .page-wrap {
-  max-width: 1600px;
+  max-width: 1700px;
+  height: calc(100vh - 112px);
   padding-top: 18px;
-  padding-bottom: 56px;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .panel-card {
@@ -84,12 +88,18 @@ body {
 }
 
 .canvas-card {
-  min-height: 580px;
+  height: calc(100vh - 220px);
+  min-height: 460px;
 }
 
-.canvas-shell {
+.canvas-card-body {
+  height: calc(100% - 56px);
+}
+
+.fit-area {
   width: 100%;
-  min-height: 520px;
+  height: 100%;
+  min-height: 410px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -101,8 +111,9 @@ body {
 }
 
 .main-canvas {
-  max-width: 100%;
-  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
   display: block;
   background: white;
   border-radius: 10px;
@@ -123,13 +134,9 @@ body {
   transition: 0.15s ease;
 }
 
-.channel-item:hover {
-  transform: translateY(-1px);
-}
+.channel-item:hover { transform: translateY(-1px); }
 
-.channel-item.active {
-  outline: 2px solid #8a8a8a;
-}
+.channel-item.active { outline: 2px solid #8a8a8a; }
 
 .channel-head {
   font-weight: 700;
@@ -166,17 +173,29 @@ body {
   padding-right: 16px;
 }
 
+.save-format {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
 @media (max-width: 960px) {
+  .page-wrap {
+    height: auto;
+    min-height: calc(100vh - 112px);
+  }
+
   .top-controls {
     grid-template-columns: 1fr;
   }
 
   .canvas-card {
-    min-height: auto;
+    height: auto;
+    min-height: 60vh;
   }
 
-  .canvas-shell {
-    min-height: 360px;
+  .fit-area {
+    min-height: 50vh;
   }
 
   .channels-grid {

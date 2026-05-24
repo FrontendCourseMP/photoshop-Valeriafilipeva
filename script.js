@@ -40,13 +40,24 @@ createApp({
     const pendingFormat = ref(null);
 
     let ctx = null;
+    let resizeObserver = null;
 
     onMounted(async () => {
       await nextTick();
       ctx = canvasRef.value.getContext("2d");
       clearCanvasOnly();
       updateStatusBar();
+      setupResizeObserver();
     });
+
+    function setupResizeObserver() {
+      const area = document.querySelector(".fit-area");
+      if (!area) return;
+      resizeObserver = new ResizeObserver(() => {
+        if (hasImage.value && originalImageData.value) drawMainCanvas();
+      });
+      resizeObserver.observe(area);
+    }
 
     function updateStatusBar() {
       if (!hasImage.value) {
@@ -58,15 +69,26 @@ createApp({
 
     function clearCanvasOnly() {
       if (!ctx || !canvasRef.value) return;
-      const canvas = canvasRef.value;
-      canvas.width = 700;
-      canvas.height = 480;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvasRef.value.width = 1200;
+      canvasRef.value.height = 800;
+      ctx.clearRect(0, 0, canvasRef.value.width, canvasRef.value.height);
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillRect(0, 0, canvasRef.value.width, canvasRef.value.height);
       ctx.fillStyle = "#8a8a8a";
       ctx.font = "16px Arial";
       ctx.fillText("Загрузите изображение", 20, 30);
+      canvasRef.value.style.width = "100%";
+      canvasRef.value.style.height = "100%";
+    }
+
+    function clearChannelCanvases() {
+      [channelRRef, channelGRef, channelBRef, channelARef].forEach((r) => {
+        if (!r.value) return;
+        const c = r.value;
+        c.width = 1;
+        c.height = 1;
+        c.getContext("2d").clearRect(0, 0, 1, 1);
+      });
     }
 
     function resetAllState() {
@@ -84,18 +106,7 @@ createApp({
       channelA.value = true;
       statusText.value = "Изображение не загружено";
       clearCanvasOnly();
-      updateChannelPreviewsEmpty();
-    }
-
-    function updateChannelPreviewsEmpty() {
-      [channelRRef, channelGRef, channelBRef, channelARef].forEach((r) => {
-        if (!r.value) return;
-        const c = r.value;
-        c.width = 1;
-        c.height = 1;
-        const cctx = c.getContext("2d");
-        cctx.clearRect(0, 0, 1, 1);
-      });
+      clearChannelCanvases();
     }
 
     function buildImageDataByChannels(srcImageData) {
@@ -123,11 +134,27 @@ createApp({
         clearCanvasOnly();
         return;
       }
-      const canvas = canvasRef.value;
-      canvas.width = originalImageData.value.width;
-      canvas.height = originalImageData.value.height;
-      const out = buildImageDataByChannels(originalImageData.value);
+
+      const wrapper = document.querySelector(".fit-area");
+      const src = originalImageData.value;
+      const wrapRect = wrapper.getBoundingClientRect();
+
+      const scale = Math.min(
+        (wrapRect.width - 24) / src.width,
+        (wrapRect.height - 24) / src.height
+      );
+
+      const drawW = Math.max(1, Math.floor(src.width * scale));
+      const drawH = Math.max(1, Math.floor(src.height * scale));
+
+      canvasRef.value.width = src.width;
+      canvasRef.value.height = src.height;
+
+      const out = buildImageDataByChannels(src);
       ctx.putImageData(out, 0, 0);
+
+      canvasRef.value.style.width = `${drawW}px`;
+      canvasRef.value.style.height = `${drawH}px`;
     }
 
     function makeChannelPreview(refCanvas, mode) {
@@ -186,16 +213,28 @@ createApp({
       updateStatusBar();
     }
 
+    function onClearFile() {
+      selectedFile.value = null;
+      fileInputKey.value++;
+      resetAllState();
+    }
+
     function onFileChange(value) {
-      if (!value || (Array.isArray(value) && value.length === 0)) {
-        selectedFile.value = null;
-        fileInputKey.value++;
-        resetAllState();
+      if (!value) {
+        onClearFile();
         return;
       }
 
-      const file = Array.isArray(value) ? value[0] : value instanceof File ? value : value?.target?.files?.[0];
-      if (!file) return;
+      const file = Array.isArray(value)
+        ? value[0]
+        : value instanceof File
+          ? value
+          : value?.target?.files?.[0];
+
+      if (!file) {
+        onClearFile();
+        return;
+      }
 
       const name = file.name.toLowerCase();
       if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) {
@@ -204,31 +243,32 @@ createApp({
         loadGb7Image(file);
       } else {
         alert("Поддерживаются только PNG, JPG и GB7");
-        selectedFile.value = null;
-        fileInputKey.value++;
+        onClearFile();
       }
     }
 
     function loadStandardImage(file) {
       const url = URL.createObjectURL(file);
       const img = new Image();
+
       img.onload = () => {
         currentColorDepth.value = "24 бита (RGB)";
         hasMaskFlag.value = false;
         drawImageToCanvas(img);
         URL.revokeObjectURL(url);
       };
+
       img.onerror = () => {
         URL.revokeObjectURL(url);
         alert("Ошибка при загрузке изображения");
+        onClearFile();
       };
+
       img.src = url;
     }
 
     function parseGb7Header(dataView) {
-      for (let i = 0; i < 4; i++) {
-        if (dataView.getUint8(i) !== GB7_SIGNATURE[i]) throw new Error("Неверная сигнатура GB7");
-      }
+      for (let i = 0; i < 4; i++) if (dataView.getUint8(i) !== GB7_SIGNATURE[i]) throw new Error("Неверная сигнатура GB7");
       if (dataView.getUint8(4) !== 0x01) throw new Error("Неподдерживаемая версия GB7");
       const flag = dataView.getUint8(5);
       const maskFlag = (flag & 0x01) === 1;
@@ -287,6 +327,7 @@ createApp({
         updateStatusBar();
       } catch (e) {
         alert("Ошибка при загрузке GB7: " + e.message);
+        onClearFile();
       }
     }
 
@@ -304,7 +345,6 @@ createApp({
 
     function encodeCanvasToGb7(maskFlag) {
       if (!ctx || !canvasRef.value || !originalImageData.value) throw new Error("Нет изображения");
-
       const width = canvasRef.value.width;
       const height = canvasRef.value.height;
       const src = ctx.getImageData(0, 0, width, height).data;
@@ -319,7 +359,6 @@ createApp({
         const g = src[si + 1];
         const b = src[si + 2];
         const a = src[si + 3];
-
         const gray = 0.299 * r + 0.587 * g + 0.114 * b;
         const gray7 = Math.round((Math.max(0, Math.min(255, gray)) / 255) * 127);
         let byte = gray7 & 0x7f;
@@ -387,15 +426,35 @@ createApp({
       }
     }
 
+    function closePipette() {
+      activeTool.value = null;
+      pipetteData.value = null;
+    }
+
+    function closeChannelsPanel() {
+      showChannelsPanel.value = false;
+    }
+
     function togglePipette() {
       if (!hasImage.value) return;
-      activeTool.value = activeTool.value === "pipette" ? null : "pipette";
+      if (activeTool.value === "pipette") {
+        closePipette();
+      } else {
+        activeTool.value = "pipette";
+        showChannelsPanel.value = false;
+      }
       menuOpen.value = false;
     }
 
     function toggleChannelsPanel() {
-      showChannelsPanel.value = !showChannelsPanel.value;
+      if (showChannelsPanel.value) {
+        closeChannelsPanel();
+      } else {
+        showChannelsPanel.value = true;
+        activeTool.value = null;
+      }
       menuOpen.value = false;
+      if (showChannelsPanel.value) updateAllPreviews();
     }
 
     function toggleChannel(ch) {
@@ -478,13 +537,17 @@ createApp({
       hasImage,
       statusText,
       onFileChange,
+      onClearFile,
       openSaveDialog,
       cancelSave,
       confirmSave,
       showSaveDialog,
       filenameInput,
+      pendingFormat,
       activeTool,
       togglePipette,
+      closePipette,
+      closeChannelsPanel,
       pipetteData,
       onCanvasClick,
       channelR,

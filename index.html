@@ -16,33 +16,35 @@
         <v-app>
             <v-app-bar density="comfortable" flat class="topbar">
                 <v-app-bar-nav-icon @click="menuOpen = !menuOpen"></v-app-bar-nav-icon>
-
                 <v-app-bar-title>
                     Цифровое представление изображения
                     <div class="subtitle">Лабораторная работа 1</div>
                 </v-app-bar-title>
-
                 <template #append>
                     <div class="topbar-badge">PNG · JPG · GB7</div>
                 </template>
             </v-app-bar>
 
-            <v-navigation-drawer v-model="menuOpen" temporary location="start" width="280" class="drawer">
+            <v-navigation-drawer v-model="menuOpen" temporary location="start" width="300" class="drawer">
                 <div class="drawer-title">Меню</div>
 
                 <v-list density="comfortable" nav>
                     <v-list-item @click="togglePipette" :active="activeTool === 'pipette'">
-                        <template #prepend>
-                            <v-icon>mdi-eyedropper</v-icon>
-                        </template>
+                        <template #prepend><v-icon>mdi-eyedropper</v-icon></template>
                         <v-list-item-title>Пипетка</v-list-item-title>
+                        <template #append>
+                            <v-btn v-if="activeTool === 'pipette'" icon="mdi-close" variant="text" size="small"
+                                @click.stop="closePipette" />
+                        </template>
                     </v-list-item>
 
                     <v-list-item @click="toggleChannelsPanel" :active="showChannelsPanel">
-                        <template #prepend>
-                            <v-icon>mdi-view-grid-outline</v-icon>
-                        </template>
+                        <template #prepend><v-icon>mdi-view-grid-outline</v-icon></template>
                         <v-list-item-title>Панель каналов</v-list-item-title>
+                        <template #append>
+                            <v-btn v-if="showChannelsPanel" icon="mdi-close" variant="text" size="small"
+                                @click.stop="closeChannelsPanel" />
+                        </template>
                     </v-list-item>
                 </v-list>
             </v-navigation-drawer>
@@ -57,7 +59,7 @@
                                     <v-file-input :key="fileInputKey" v-model="selectedFile"
                                         accept=".png,.jpg,.jpeg,.gb7" label="Выберите PNG, JPG или GB7"
                                         prepend-icon="mdi-file-image" variant="outlined" density="comfortable" clearable
-                                        @update:model-value="onFileChange" />
+                                        @update:model-value="onFileChange" @click:clear="onClearFile" />
                                 </div>
 
                                 <div>
@@ -79,8 +81,8 @@
                         <v-col cols="12" lg="8">
                             <v-card class="panel-card canvas-card" rounded="lg">
                                 <v-card-title class="card-title">Главный холст</v-card-title>
-                                <v-card-text>
-                                    <div class="canvas-shell">
+                                <v-card-text class="canvas-card-body">
+                                    <div class="fit-area">
                                         <canvas ref="canvasRef" class="main-canvas" @click="onCanvasClick"></canvas>
                                     </div>
                                 </v-card-text>
@@ -146,6 +148,7 @@
                     <v-card-text>
                         <v-text-field v-model="filenameInput" label="Имя файла" variant="outlined"
                             density="comfortable" />
+                        <div class="save-format">Формат: {{ pendingFormat?.toUpperCase() }}</div>
                     </v-card-text>
                     <v-card-actions class="justify-end">
                         <v-btn variant="text" @click="cancelSave">Отмена</v-btn>
