@@ -45,8 +45,7 @@ createApp({
     onMounted(async () => {
       await nextTick();
       ctx = canvasRef.value.getContext("2d");
-      clearCanvasOnly();
-      updateStatusBar();
+      resetCanvas();
       setupResizeObserver();
     });
 
@@ -59,15 +58,7 @@ createApp({
       resizeObserver.observe(area);
     }
 
-    function updateStatusBar() {
-      if (!hasImage.value) {
-        statusText.value = "Изображение не загружено";
-        return;
-      }
-      statusText.value = `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${currentColorDepth.value}`;
-    }
-
-    function clearCanvasOnly() {
+    function resetCanvas() {
       if (!ctx || !canvasRef.value) return;
       canvasRef.value.width = 1200;
       canvasRef.value.height = 800;
@@ -79,16 +70,7 @@ createApp({
       ctx.fillText("Загрузите изображение", 20, 30);
       canvasRef.value.style.width = "100%";
       canvasRef.value.style.height = "100%";
-    }
-
-    function clearChannelCanvases() {
-      [channelRRef, channelGRef, channelBRef, channelARef].forEach((r) => {
-        if (!r.value) return;
-        const c = r.value;
-        c.width = 1;
-        c.height = 1;
-        c.getContext("2d").clearRect(0, 0, 1, 1);
-      });
+      updateStatusBar();
     }
 
     function resetAllState() {
@@ -105,8 +87,24 @@ createApp({
       channelB.value = true;
       channelA.value = true;
       statusText.value = "Изображение не загружено";
-      clearCanvasOnly();
+      resetCanvas();
       clearChannelCanvases();
+    }
+
+    function clearChannelCanvases() {
+      [channelRRef, channelGRef, channelBRef, channelARef].forEach((r) => {
+        if (!r.value) return;
+        const c = r.value;
+        c.width = 1;
+        c.height = 1;
+        c.getContext("2d").clearRect(0, 0, 1, 1);
+      });
+    }
+
+    function updateStatusBar() {
+      statusText.value = !hasImage.value
+        ? "Изображение не загружено"
+        : `Размер: ${currentWidth.value}×${currentHeight.value} px | Глубина цвета: ${currentColorDepth.value}`;
     }
 
     function buildImageDataByChannels(srcImageData) {
@@ -129,20 +127,15 @@ createApp({
     }
 
     function drawMainCanvas() {
-      if (!ctx || !canvasRef.value) return;
-      if (!originalImageData.value) {
-        clearCanvasOnly();
+      if (!ctx || !canvasRef.value || !originalImageData.value) {
+        resetCanvas();
         return;
       }
 
       const wrapper = document.querySelector(".fit-area");
       const src = originalImageData.value;
       const wrapRect = wrapper.getBoundingClientRect();
-
-      const scale = Math.min(
-        (wrapRect.width - 24) / src.width,
-        (wrapRect.height - 24) / src.height
-      );
+      const scale = Math.min((wrapRect.width - 24) / src.width, (wrapRect.height - 24) / src.height);
 
       const drawW = Math.max(1, Math.floor(src.width * scale));
       const drawH = Math.max(1, Math.floor(src.height * scale));
@@ -159,6 +152,7 @@ createApp({
 
     function makeChannelPreview(refCanvas, mode) {
       if (!originalImageData.value || !refCanvas.value) return;
+
       const src = originalImageData.value;
       const canvas = refCanvas.value;
       canvas.width = Math.max(1, Math.min(220, src.width));
@@ -397,8 +391,8 @@ createApp({
     }
 
     function ensureExtension(filename, format) {
-      const map = { png: ".png", jpg: ".jpg", gb7: ".gb7" };
-      const ext = map[format];
+      const extMap = { png: ".png", jpg: ".jpg", gb7: ".gb7" };
+      const ext = extMap[format];
       const name = filename.trim();
       if (!name) return "";
       return name.toLowerCase().endsWith(ext) ? name : name + ext;
@@ -437,9 +431,8 @@ createApp({
 
     function togglePipette() {
       if (!hasImage.value) return;
-      if (activeTool.value === "pipette") {
-        closePipette();
-      } else {
+      if (activeTool.value === "pipette") closePipette();
+      else {
         activeTool.value = "pipette";
         showChannelsPanel.value = false;
       }
@@ -447,9 +440,8 @@ createApp({
     }
 
     function toggleChannelsPanel() {
-      if (showChannelsPanel.value) {
-        closeChannelsPanel();
-      } else {
+      if (showChannelsPanel.value) closeChannelsPanel();
+      else {
         showChannelsPanel.value = true;
         activeTool.value = null;
       }

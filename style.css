@@ -46,13 +46,10 @@ html, body {
 }
 
 .page-wrap {
-  max-width: 1700px;
-  height: calc(100vh - 112px);
+  max-width: 1800px;
+  min-height: calc(100vh - 112px);
   padding-top: 18px;
-  padding-bottom: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding-bottom: 56px;
 }
 
 .panel-card {
@@ -81,15 +78,32 @@ html, body {
   align-items: end;
 }
 
+.upload-block {
+  min-width: 0;
+}
+
+.save-block {
+  min-width: 220px;
+}
+
 .btn-row {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+.main-grid {
+  align-items: stretch;
+}
+
+.canvas-column,
+.side-column {
+  display: flex;
+}
+
 .canvas-card {
-  height: calc(100vh - 220px);
-  min-height: 460px;
+  width: 100%;
+  min-height: 68vh;
 }
 
 .canvas-card-body {
@@ -99,7 +113,7 @@ html, body {
 .fit-area {
   width: 100%;
   height: 100%;
-  min-height: 410px;
+  min-height: 56vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,22 +194,16 @@ html, body {
 }
 
 @media (max-width: 960px) {
-  .page-wrap {
-    height: auto;
-    min-height: calc(100vh - 112px);
-  }
-
   .top-controls {
     grid-template-columns: 1fr;
   }
 
   .canvas-card {
-    height: auto;
     min-height: 60vh;
   }
 
   .fit-area {
-    min-height: 50vh;
+    min-height: 48vh;
   }
 
   .channels-grid {

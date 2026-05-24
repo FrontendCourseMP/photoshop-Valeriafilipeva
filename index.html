@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Цифровое представление изображения — ЛР 1</title>
+    <title>Цифровое представление изображения — ЛР 2</title>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
@@ -18,7 +18,7 @@
                 <v-app-bar-nav-icon @click="menuOpen = !menuOpen"></v-app-bar-nav-icon>
                 <v-app-bar-title>
                     Цифровое представление изображения
-                    <div class="subtitle">Лабораторная работа 1</div>
+                    <div class="subtitle">Лабораторная работа 2</div>
                 </v-app-bar-title>
                 <template #append>
                     <div class="topbar-badge">PNG · JPG · GB7</div>
@@ -54,7 +54,7 @@
                     <v-card class="panel-card mb-4" rounded="lg">
                         <v-card-text>
                             <div class="top-controls">
-                                <div>
+                                <div class="upload-block">
                                     <div class="section-label">Загрузка изображения</div>
                                     <v-file-input :key="fileInputKey" v-model="selectedFile"
                                         accept=".png,.jpg,.jpeg,.gb7" label="Выберите PNG, JPG или GB7"
@@ -62,7 +62,7 @@
                                         @update:model-value="onFileChange" @click:clear="onClearFile" />
                                 </div>
 
-                                <div>
+                                <div class="save-block">
                                     <div class="section-label">Сохранение</div>
                                     <div class="btn-row">
                                         <v-btn variant="outlined" :disabled="!hasImage"
@@ -77,8 +77,8 @@
                         </v-card-text>
                     </v-card>
 
-                    <v-row dense>
-                        <v-col cols="12" lg="8">
+                    <v-row dense class="main-grid">
+                        <v-col cols="12" lg="8" class="canvas-column">
                             <v-card class="panel-card canvas-card" rounded="lg">
                                 <v-card-title class="card-title">Главный холст</v-card-title>
                                 <v-card-text class="canvas-card-body">
@@ -89,7 +89,7 @@
                             </v-card>
                         </v-col>
 
-                        <v-col cols="12" lg="4">
+                        <v-col cols="12" lg="4" class="side-column">
                             <v-card v-if="showChannelsPanel" class="panel-card mb-4" rounded="lg">
                                 <v-card-title class="card-title">Панель каналов</v-card-title>
                                 <v-card-text>
@@ -124,11 +124,8 @@
                                     <div v-if="pipetteData" class="info-lines">
                                         <div>X: {{ pipetteData.x }}, Y: {{ pipetteData.y }}</div>
                                         <div>RGB: {{ pipetteData.r }}, {{ pipetteData.g }}, {{ pipetteData.b }}</div>
-                                        <div>
-                                            CIELAB: L* {{ pipetteData.L.toFixed(2) }},
-                                            a* {{ pipetteData.a.toFixed(2) }},
-                                            b* {{ pipetteData.bLab.toFixed(2) }}
-                                        </div>
+                                        <div>CIELAB: L* {{ pipetteData.L.toFixed(2) }}, a* {{ pipetteData.a.toFixed(2)
+                                            }}, b* {{ pipetteData.bLab.toFixed(2) }}</div>
                                     </div>
                                     <div v-else class="empty-text">Кликните по изображению, чтобы считать пиксель.</div>
                                 </v-card-text>
@@ -148,7 +145,7 @@
                     <v-card-text>
                         <v-text-field v-model="filenameInput" label="Имя файла" variant="outlined"
                             density="comfortable" />
-                        <div class="save-format">Формат: {{ pendingFormat?.toUpperCase() }}</div>
+                        <div class="save-format">Формат: {{ pendingFormat ? pendingFormat.toUpperCase() : '' }}</div>
                     </v-card-text>
                     <v-card-actions class="justify-end">
                         <v-btn variant="text" @click="cancelSave">Отмена</v-btn>
