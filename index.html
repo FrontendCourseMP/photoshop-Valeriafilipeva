@@ -3,213 +3,199 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Цифровое представление изображения — ЛР 1</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Цифровое представление изображения — ЛР 1, 2</title>
 
-    <!-- Vuetify CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.css" />
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
-
     <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
     <div id="app">
         <v-app>
+            <v-app-bar density="comfortable" flat class="topbar">
+                <v-app-bar-nav-icon @click="menuOpen = !menuOpen"></v-app-bar-nav-icon>
 
-            <!-- Верхняя панель -->
-            <v-app-bar density="comfortable" flat>
-                <div class="app-bar-content">
-                    <div class="title-block">
-                        <v-app-bar-title>Цифровое представление изображения</v-app-bar-title>
-                        <span class="lab-subtitle">Лабораторная работа 1</span>
-                    </div>
+                <v-app-bar-title>
+                    Цифровое представление изображения
+                    <div class="subtitle">Лабораторная работа 1, 2</div>
+                </v-app-bar-title>
 
-                    <span class="text-caption formats">PNG · JPG · GB7</span>
-                </div>
+                <template #append>
+                    <div class="topbar-badge">PNG · JPG · GB7</div>
+                </template>
             </v-app-bar>
 
-            <!-- Основная область -->
+            <v-navigation-drawer v-model="menuOpen" temporary location="start" width="290" class="drawer">
+                <div class="drawer-title">Меню</div>
+
+                <v-list density="comfortable" nav>
+                    <v-list-item @click="togglePipette" :active="activeTool === 'pipette'">
+                        <template #prepend>
+                            <v-icon>mdi-eyedropper</v-icon>
+                        </template>
+                        <v-list-item-title>Пипетка</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="showChannelsPanel = !showChannelsPanel" :active="showChannelsPanel">
+                        <template #prepend>
+                            <v-icon>mdi-shape-outline</v-icon>
+                        </template>
+                        <v-list-item-title>Панель каналов</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+
+                <v-divider class="my-3"></v-divider>
+
+                <v-list density="comfortable" nav>
+                    <v-list-item @click="openSaveDialog('png')" :disabled="!hasImage">
+                        <template #prepend>
+                            <v-icon>mdi-download</v-icon>
+                        </template>
+                        <v-list-item-title>Скачать PNG</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="openSaveDialog('jpg')" :disabled="!hasImage">
+                        <template #prepend>
+                            <v-icon>mdi-download</v-icon>
+                        </template>
+                        <v-list-item-title>Скачать JPG</v-list-item-title>
+                    </v-list-item>
+
+                    <v-list-item @click="openSaveDialog('gb7')" :disabled="!hasImage">
+                        <template #prepend>
+                            <v-icon>mdi-download</v-icon>
+                        </template>
+                        <v-list-item-title>Скачать GB7</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-navigation-drawer>
+
             <v-main>
-                <v-container class="py-4" fluid>
+                <v-container fluid class="page-wrap">
+                    <v-card class="panel-card mb-4" rounded="lg">
+                        <v-card-text>
+                            <div class="controls-grid">
+                                <div class="upload-block">
+                                    <div class="section-label">Загрузка</div>
+                                    <v-file-input v-model="selectedFile" accept=".png,.jpg,.jpeg,.gb7"
+                                        label="Выберите PNG, JPG или GB7" prepend-icon="mdi-file-image"
+                                        variant="outlined" density="comfortable" clearable
+                                        @update:model-value="onFileChange" />
+                                </div>
 
-                    <!-- Панель инструментов + загрузка + скачивание -->
-                    <v-row class="mb-4" align="center" justify="space-between">
-
-                        <!-- Панель инструментов -->
-                        <v-col cols="12" md="3">
-                            <div class="tools-panel-title">Инструменты</div>
-
-                            <v-menu>
-                                <template #activator="{ props }">
-                                    <v-btn v-bind="props" variant="outlined" density="comfortable">
-                                        <v-icon start>mdi-wrench</v-icon>
-                                        Панель инструментов
-                                    </v-btn>
-                                </template>
-
-                                <v-list>
-                                    <v-list-item :disabled="!hasImage" @click="togglePipette">
-                                        <v-list-item-title>
-                                            <v-icon start small>mdi-eyedropper</v-icon>
-                                            Пипетка
-                                            <span v-if="activeTool === 'pipette'"> (активна)</span>
-                                        </v-list-item-title>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </v-col>
-
-                        <!-- Загрузка изображения -->
-                        <v-col cols="12" md="5">
-                            <v-file-input v-model="selectedFile" label="Загрузить изображение (PNG, JPG, GB7)"
-                                accept=".png,.jpg,.jpeg,.gb7" prepend-icon="mdi-file-image" density="comfortable"
-                                clearable @update:model-value="onFileChange"></v-file-input>
-                        </v-col>
-
-                        <!-- Кнопки скачивания -->
-                        <v-col cols="12" md="4" class="download-buttons">
-                            <v-btn :disabled="!hasImage" @click="openSaveDialog('png')">
-                                <v-icon start>mdi-download</v-icon> PNG
-                            </v-btn>
-
-                            <v-btn :disabled="!hasImage" @click="openSaveDialog('jpg')">
-                                <v-icon start>mdi-download</v-icon> JPG
-                            </v-btn>
-
-                            <v-btn :disabled="!hasImage" @click="openSaveDialog('gb7')">
-                                <v-icon start>mdi-download</v-icon> GB7
-                            </v-btn>
-                        </v-col>
-                    </v-row>
-
-                    <!-- Холст -->
-                    <v-row>
-                        <v-col cols="12">
-                            <div class="canvas-wrapper">
-                                <canvas ref="canvasRef" @click="onCanvasClick"></canvas>
-                            </div>
-                        </v-col>
-                    </v-row>
-
-                    <!-- Панель каналов + панель информации -->
-                    <v-row class="mt-4" align="stretch">
-
-                        <!-- Панель каналов -->
-                        <v-col cols="12" md="6">
-                            <div class="channels-panel">
-                                <div class="channels-title">Каналы</div>
-
-                                <div class="channels-grid">
-
-                                    <div class="channel-item" :class="{ 'channel-item--active': channelR }"
-                                        @click="toggleChannel('r')">
-                                        <div class="channel-header">
-                                            <span class="channel-label">R</span>
-                                        </div>
-                                        <canvas ref="channelRRef" class="channel-canvas"></canvas>
+                                <div class="actions-block">
+                                    <div class="section-label">Сохранение</div>
+                                    <div class="btn-row">
+                                        <v-btn variant="outlined" :disabled="!hasImage" @click="openSaveDialog('png')">
+                                            PNG
+                                        </v-btn>
+                                        <v-btn variant="outlined" :disabled="!hasImage" @click="openSaveDialog('jpg')">
+                                            JPG
+                                        </v-btn>
+                                        <v-btn variant="outlined" :disabled="!hasImage" @click="openSaveDialog('gb7')">
+                                            GB7
+                                        </v-btn>
                                     </div>
-
-                                    <div class="channel-item" :class="{ 'channel-item--active': channelG }"
-                                        @click="toggleChannel('g')">
-                                        <div class="channel-header">
-                                            <span class="channel-label">G</span>
-                                        </div>
-                                        <canvas ref="channelGRef" class="channel-canvas"></canvas>
-                                    </div>
-
-                                    <div class="channel-item" :class="{ 'channel-item--active': channelB }"
-                                        @click="toggleChannel('b')">
-                                        <div class="channel-header">
-                                            <span class="channel-label">B</span>
-                                        </div>
-                                        <canvas ref="channelBRef" class="channel-canvas"></canvas>
-                                    </div>
-
-                                    <div class="channel-item" :class="{ 'channel-item--active': channelA }"
-                                        @click="toggleChannel('a')">
-                                        <div class="channel-header">
-                                            <span class="channel-label">A</span>
-                                        </div>
-                                        <canvas ref="channelARef" class="channel-canvas"></canvas>
-                                    </div>
-
                                 </div>
                             </div>
+                        </v-card-text>
+                    </v-card>
+
+                    <v-row dense>
+                        <v-col cols="12" lg="8">
+                            <v-card class="panel-card canvas-card" rounded="lg">
+                                <v-card-title class="card-title">Главный холст</v-card-title>
+                                <v-card-text>
+                                    <div class="canvas-shell">
+                                        <canvas ref="canvasRef" class="main-canvas" @click="onCanvasClick"></canvas>
+                                    </div>
+                                </v-card-text>
+                            </v-card>
                         </v-col>
 
-                        <!-- Панель информации о пикселе -->
-                        <v-col cols="12" md="6">
-                            <div class="info-panel">
-                                <div class="info-title">Информация о пикселе</div>
+                        <v-col cols="12" lg="4">
+                            <v-card v-if="showChannelsPanel" class="panel-card mb-4" rounded="lg">
+                                <v-card-title class="card-title">Панель каналов</v-card-title>
+                                <v-card-text>
+                                    <div class="channels-grid">
+                                        <div class="channel-item" :class="{ active: channelR }"
+                                            @click="toggleChannel('r')">
+                                            <div class="channel-head">R</div>
+                                            <canvas ref="channelRRef" class="channel-canvas"></canvas>
+                                        </div>
 
-                                <!-- Пипетка активна и есть данные -->
-                                <div v-if="activeTool === 'pipette' && pipetteData" class="info-content">
-                                    <div><strong>Координаты:</strong> X = {{ pipetteData.x }}, Y = {{ pipetteData.y }}
+                                        <div class="channel-item" :class="{ active: channelG }"
+                                            @click="toggleChannel('g')">
+                                            <div class="channel-head">G</div>
+                                            <canvas ref="channelGRef" class="channel-canvas"></canvas>
+                                        </div>
+
+                                        <div class="channel-item" :class="{ active: channelB }"
+                                            @click="toggleChannel('b')">
+                                            <div class="channel-head">B</div>
+                                            <canvas ref="channelBRef" class="channel-canvas"></canvas>
+                                        </div>
+
+                                        <div class="channel-item" :class="{ active: channelA }"
+                                            @click="toggleChannel('a')">
+                                            <div class="channel-head">A</div>
+                                            <canvas ref="channelARef" class="channel-canvas"></canvas>
+                                        </div>
                                     </div>
-                                    <div><strong>RGB:</strong> {{ pipetteData.r }}, {{ pipetteData.g }}, {{
-                                        pipetteData.b }}</div>
-                                    <div>
-                                        <strong>CIELAB:</strong>
-                                        L* = {{ pipetteData.L.toFixed(2) }},
-                                        a* = {{ pipetteData.a.toFixed(2) }},
-                                        b* = {{ pipetteData.bLab.toFixed(2) }}
+                                </v-card-text>
+                            </v-card>
+
+                            <v-card class="panel-card" rounded="lg">
+                                <v-card-title class="card-title">Информация о пикселе</v-card-title>
+                                <v-card-text>
+                                    <div v-if="activeTool === 'pipette' && pipetteData" class="info-lines">
+                                        <div>X: {{ pipetteData.x }}, Y: {{ pipetteData.y }}</div>
+                                        <div>RGB: {{ pipetteData.r }}, {{ pipetteData.g }}, {{ pipetteData.b }}</div>
+                                        <div>
+                                            CIELAB: L* {{ pipetteData.L.toFixed(2) }},
+                                            a* {{ pipetteData.a.toFixed(2) }},
+                                            b* {{ pipetteData.bLab.toFixed(2) }}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <!-- Пипетка активна, но по изображению ещё не кликали -->
-                                <div v-else-if="activeTool === 'pipette'" class="info-empty">
-                                    Кликните по изображению на холсте, чтобы получить данные пикселя.
-                                </div>
+                                    <div v-else-if="activeTool === 'pipette'" class="empty-text">
+                                        Кликните по изображению, чтобы считать пиксель.
+                                    </div>
 
-                                <!-- Пипетка не выбрана -->
-                                <div v-else class="info-empty">
-                                    Выберите инструмент «Пипетка» в панели инструментов.
-                                </div>
-                            </div>
+                                    <div v-else class="empty-text">
+                                        Выберите инструмент «Пипетка» в меню слева.
+                                    </div>
+                                </v-card-text>
+                            </v-card>
                         </v-col>
-
                     </v-row>
-
                 </v-container>
             </v-main>
 
-            <!-- Строка состояния -->
-            <v-footer app class="status-bar" height="32">
-                <div class="status-text">
-                    {{ statusText }}
-                </div>
+            <v-footer app height="34" class="status-bar">
+                <div>{{ statusText }}</div>
             </v-footer>
 
-            <!-- Диалог ввода имени файла -->
-            <v-dialog v-model="showSaveDialog" max-width="400">
+            <v-dialog v-model="showSaveDialog" max-width="420">
                 <v-card>
-                    <v-card-title class="d-flex justify-space-between align-center">
-                        <span>Сохранение файла</span>
-                        <v-btn icon="mdi-close" variant="text" @click="cancelSave"></v-btn>
-                    </v-card-title>
-
+                    <v-card-title>Сохранение файла</v-card-title>
                     <v-card-text>
-                        <v-text-field v-model="filenameInput" label="Имя файла" density="comfortable" variant="outlined"
-                            hide-details="auto"></v-text-field>
+                        <v-text-field v-model="filenameInput" label="Имя файла" variant="outlined"
+                            density="comfortable" />
                     </v-card-text>
-
                     <v-card-actions class="justify-end">
                         <v-btn variant="text" @click="cancelSave">Отмена</v-btn>
                         <v-btn color="primary" variant="flat" @click="confirmSave">Сохранить</v-btn>
                     </v-card-actions>
                 </v-card>
             </v-dialog>
-
         </v-app>
     </div>
 
-    <!-- Vue -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-    <!-- Vuetify -->
     <script src="https://cdn.jsdelivr.net/npm/vuetify@3.6.0/dist/vuetify.min.js"></script>
-
     <script src="script.js"></script>
 </body>
 

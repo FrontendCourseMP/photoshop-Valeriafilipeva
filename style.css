@@ -1,174 +1,200 @@
-/* ====== БАЗОВЫЙ СТИЛЬ ПРИЛОЖЕНИЯ ====== */
+:root {
+  --bg: #e7e7e7;
+  --panel: #f4f4f4;
+  --panel-2: #ededed;
+  --line: #c9c9c9;
+  --text: #2f2f2f;
+  --muted: #6b6b6b;
+  --accent: #7b7b7b;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
 
+html,
 body {
-  background: #1e1e1e;
-  color: #e0e0e0;
-  font-family: "Inter", sans-serif;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(180deg, #eeeeee 0%, #e3e3e3 100%);
+  color: var(--text);
+  font-family: Inter, Roboto, Arial, sans-serif;
 }
 
-.v-application {
-  background: #1e1e1e !important;
+#app {
+  min-height: 100vh;
 }
 
-.app-bar-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
+.topbar {
+  background: #f7f7f7 !important;
+  border-bottom: 1px solid var(--line);
 }
 
-.title-block {
-  display: flex;
-  flex-direction: column;
-}
-
-.lab-subtitle {
+.subtitle {
   font-size: 12px;
-  opacity: 0.7;
-  margin-top: -4px;
+  color: var(--muted);
+  margin-top: 2px;
 }
 
-.formats {
-  opacity: 0.7;
+.topbar-badge {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: white;
 }
 
-/* ====== ПАНЕЛЬ ИНСТРУМЕНТОВ ====== */
+.drawer {
+  background: #f9f9f9;
+}
 
-.tools-panel-title {
-  font-size: 14px;
+.drawer-title {
+  padding: 16px 16px 8px;
   font-weight: 600;
-  margin-bottom: 6px;
-  color: #bdbdbd;
-  letter-spacing: 0.3px;
+  color: var(--text);
 }
 
-.v-btn {
-  text-transform: none !important;
+.page-wrap {
+  max-width: 1600px;
+  padding-top: 18px;
+  padding-bottom: 56px;
 }
 
-/* ====== ХОЛСТ ====== */
+.panel-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
 
-.canvas-wrapper {
-  width: 100%;
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.section-label {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.btn-row {
   display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.canvas-card {
+  min-height: 580px;
+}
+
+.canvas-shell {
+  width: 100%;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  background: #2b2b2b;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #3a3a3a;
+  background: #d9d9d9;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  padding: 12px;
 }
 
-canvas {
+.main-canvas {
   max-width: 100%;
+  max-height: 100%;
+  width: auto;
   height: auto;
-  image-rendering: pixelated;
-  background: #000;
-}
-
-/* ====== ПАНЕЛЬ КАНАЛОВ ====== */
-
-.channels-panel {
-  background: #2b2b2b;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #3a3a3a;
-}
-
-.channels-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #e0e0e0;
+  display: block;
+  image-rendering: auto;
+  background: white;
+  border-radius: 10px;
 }
 
 .channels-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
 .channel-item {
-  background: #1f1f1f;
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
-  padding: 6px;
+  border: 1px solid var(--line);
+  background: #fafafa;
+  border-radius: 14px;
+  padding: 10px;
   cursor: pointer;
   transition: 0.15s ease;
 }
 
 .channel-item:hover {
-  border-color: #5c5c5c;
+  transform: translateY(-1px);
+  border-color: #a7a7a7;
 }
 
-.channel-item--active {
-  border-color: #42a5f5;
-  box-shadow: 0 0 0 1px #42a5f5;
+.channel-item.active {
+  outline: 2px solid #8a8a8a;
+  background: #f1f1f1;
 }
 
-.channel-header {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 4px;
-}
-
-.channel-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e0e0e0;
+.channel-head {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 8px;
 }
 
 .channel-canvas {
   width: 100%;
-  height: auto;
-  background: #000;
-  border-radius: 4px;
+  height: 110px;
+  display: block;
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #d6d6d6;
 }
 
-/* ====== ПАНЕЛЬ ИНФОРМАЦИИ ====== */
-
-.info-panel {
-  background: #2b2b2b;
-  padding: 16px;
-  border-radius: 8px;
-  border: 1px solid #3a3a3a;
-  min-height: 180px;
-}
-
-.info-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: #e0e0e0;
-}
-
-.info-content {
+.info-lines {
+  display: grid;
+  gap: 10px;
   font-size: 14px;
-  line-height: 1.6;
+  color: var(--text);
 }
 
-.info-empty {
+.empty-text {
+  color: var(--muted);
   font-size: 14px;
-  opacity: 0.7;
-  margin-top: 12px;
+  line-height: 1.5;
 }
-
-/* ====== КНОПКИ СКАЧИВАНИЯ ====== */
-
-.download-buttons {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-/* ====== СТРОКА СОСТОЯНИЯ ====== */
 
 .status-bar {
-  background: #111 !important;
-  border-top: 1px solid #333;
+  background: #f2f2f2 !important;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  padding-left: 16px;
+  padding-right: 16px;
 }
 
-.status-text {
-  font-size: 13px;
-  opacity: 0.8;
-  padding-left: 12px;
+@media (max-width: 960px) {
+  .controls-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-card {
+    min-height: auto;
+  }
+
+  .canvas-shell {
+    min-height: 360px;
+  }
+
+  .channels-grid {
+    grid-template-columns: 1fr;
+  }
 }
