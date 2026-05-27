@@ -1,16 +1,48 @@
-# React + Vite
+# Редактор изображений
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Веб-приложение для работы с изображениями, разработанное в рамках курса по цифровой обработке изображений.
 
-Currently, two official plugins are available:
+## Демо
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+https://starlit-pika-08a601.netlify.app/
 
-## React Compiler
+## Возможности
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Лабораторная работа 1 — Цифровое представление изображения
+- Загрузка изображений в форматах PNG, JPG и GB7
+- Отображение изображения на холсте HTML5 Canvas
+- Сохранение изображения в форматах PNG, JPG и GB7
+- Собственная реализация кодека GrayBit-7 (декодер и кодер)
+- Строка состояния с шириной, высотой и глубиной цвета
+- Автоматическое масштабирование при загрузке
+- Масштабирование колёсиком мыши
+- Адаптация к изменению размера окна браузера
 
-## Expanding the ESLint configuration
+### Лабораторная работа 2 — Цветовые каналы и инструмент «Пипетка»
+- Панель каналов с миниатюрами R, G, B и Alpha
+- Включение и выключение каналов с мгновенным отражением на холсте
+- Инструмент «Пипетка» для получения цвета пикселя
+- Отображение координат пикселя, значений RGB и координат в пространстве CIELAB
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Технологии
+
+- React + Vite
+- Tailwind CSS
+- Собственная реализация работы с изображениями без сторонних библиотек
+
+## Формат GrayBit-7 (GB7)
+
+Учебный формат изображений в оттенках серого без сжатия. Использует 7 бит на пиксель, 8-й бит — опциональная маска прозрачности. Реализованы декодер и кодер с нуля.
+
+## Запуск локально
+
+```bash
+npm install
+npm run dev
+```
+
+## Сборка
+
+```bash
+npm run build
+```
