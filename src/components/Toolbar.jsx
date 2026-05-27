@@ -4,63 +4,40 @@ import SaveDialog from './SaveDialog';
 
 export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) {
   const fileInputRef = useRef(null);
-  const [saveOpen, setSaveOpen]   = useState(false);
-  const [opening, setOpening]     = useState(false); // блокируем кнопку пока идёт загрузка
+  const [saveOpen, setSaveOpen] = useState(false);
+  const [opening, setOpening]  = useState(false);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     e.target.value = '';
-
     setOpening(true);
 
-    // Небольшая задержка чтобы UI успел обновиться (показать состояние кнопки)
-    await new Promise(r => setTimeout(r, 30));
-
-    const ext = file.name.split('.').pop().toLowerCase();
-
     try {
+      const ext = file.name.split('.').pop().toLowerCase();
+
       if (ext === 'gb7') {
+        // GB7 — наш кодек, читаем как arrayBuffer
         const buffer = await file.arrayBuffer();
         const { imageData, width, height, colorDepth } = decodeGB7(buffer);
         onImageLoad(imageData, { width, height, colorDepth, fileName: file.name });
-      } else {
-        // PNG/JPG — через OffscreenCanvas если доступен, иначе обычный
-        const imageBitmap = await createImageBitmap(file).catch(() => null);
 
-        if (imageBitmap) {
-          // Современный быстрый путь
-          const canvas = document.createElement('canvas');
-          canvas.width  = imageBitmap.width;
-          canvas.height = imageBitmap.height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(imageBitmap, 0, 0);
-          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          imageBitmap.close();
-          onImageLoad(imgData, {
-            width: canvas.width, height: canvas.height,
-            colorDepth: 8, fileName: file.name
-          });
-        } else {
-          // Fallback через Image
-          await new Promise((resolve, reject) => {
-            const url = URL.createObjectURL(file);
-            const img  = new Image();
-            img.onload = () => {
-              const c = document.createElement('canvas');
-              c.width = img.naturalWidth; c.height = img.naturalHeight;
-              c.getContext('2d').drawImage(img, 0, 0);
-              URL.revokeObjectURL(url);
-              onImageLoad(
-                c.getContext('2d').getImageData(0, 0, c.width, c.height),
-                { width: img.naturalWidth, height: img.naturalHeight, colorDepth: 8, fileName: file.name }
-              );
-              resolve();
-            };
-            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Не удалось загрузить')); };
-            img.src = url;
-          });
-        }
+      } else {
+        // PNG/JPG — createImageBitmap самый быстрый способ,
+        // декодирование происходит асинхронно в браузере
+        const bitmap = await createImageBitmap(file);
+        const { width, height } = bitmap;
+
+        // Рисуем на offscreen canvas — не блокирует UI
+        const offscreen = new OffscreenCanvas(width, height);
+        const ctx = offscreen.getContext('2d');
+        ctx.drawImage(bitmap, 0, 0);
+        bitmap.close();
+
+        // getImageData — единственная тяжёлая операция, но она быстрее
+        // чем через обычный canvas потому что offscreen не связан с DOM
+        const imgData = ctx.getImageData(0, 0, width, height);
+        onImageLoad(imgData, { width, height, colorDepth: 8, fileName: file.name });
       }
     } catch (err) {
       alert('Ошибка загрузки:\n' + err.message);
@@ -91,6 +68,7 @@ export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) 
           onChange={handleFileChange}
           className="hidden"
         />
+
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={opening}
@@ -121,7 +99,6 @@ export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) 
               className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#5a5c70]
                          hover:border-[#c0524a] hover:text-[#c0524a] transition-colors
                          disabled:opacity-40 disabled:cursor-not-allowed"
-              title="Закрыть изображение и очистить холст"
             >
               Закрыть
             </button>
