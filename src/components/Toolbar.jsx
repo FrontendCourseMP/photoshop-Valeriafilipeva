@@ -4,59 +4,86 @@ import SaveDialog from './SaveDialog';
 
 export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) {
   const fileInputRef = useRef(null);
-  const [saveOpen, setSaveOpen] = useState(false);
+  const [saveOpen, setSaveOpen]   = useState(false);
+  const [opening, setOpening]     = useState(false); // блокируем кнопку пока идёт загрузка
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (!file) {
-      // Пользователь отменил диалог — ничего не делаем
-      return;
-    }
+    if (!file) return;
+    e.target.value = '';
+
+    setOpening(true);
+
+    // Небольшая задержка чтобы UI успел обновиться (показать состояние кнопки)
+    await new Promise(r => setTimeout(r, 30));
 
     const ext = file.name.split('.').pop().toLowerCase();
 
-    if (ext === 'gb7') {
-      const buffer = await file.arrayBuffer();
-      try {
+    try {
+      if (ext === 'gb7') {
+        const buffer = await file.arrayBuffer();
         const { imageData, width, height, colorDepth } = decodeGB7(buffer);
         onImageLoad(imageData, { width, height, colorDepth, fileName: file.name });
-      } catch (err) {
-        alert('Failed to read GB7 file:\n' + err.message);
-      }
-    } else {
-      // PNG / JPG через браузер
-      const url = URL.createObjectURL(file);
-      const img  = new Image();
-      img.onload = () => {
-        const c = Object.assign(document.createElement('canvas'), {
-          width: img.naturalWidth, height: img.naturalHeight
-        });
-        c.getContext('2d').drawImage(img, 0, 0);
-        URL.revokeObjectURL(url);
-        onImageLoad(
-          c.getContext('2d').getImageData(0, 0, c.width, c.height),
-          { width: img.naturalWidth, height: img.naturalHeight, colorDepth: 8, fileName: file.name }
-        );
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); alert('Cannot load image'); };
-      img.src = url;
-    }
+      } else {
+        // PNG/JPG — через OffscreenCanvas если доступен, иначе обычный
+        const imageBitmap = await createImageBitmap(file).catch(() => null);
 
-    // Сброс input — чтобы можно было повторно открыть тот же файл
-    e.target.value = '';
+        if (imageBitmap) {
+          // Современный быстрый путь
+          const canvas = document.createElement('canvas');
+          canvas.width  = imageBitmap.width;
+          canvas.height = imageBitmap.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(imageBitmap, 0, 0);
+          const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          imageBitmap.close();
+          onImageLoad(imgData, {
+            width: canvas.width, height: canvas.height,
+            colorDepth: 8, fileName: file.name
+          });
+        } else {
+          // Fallback через Image
+          await new Promise((resolve, reject) => {
+            const url = URL.createObjectURL(file);
+            const img  = new Image();
+            img.onload = () => {
+              const c = document.createElement('canvas');
+              c.width = img.naturalWidth; c.height = img.naturalHeight;
+              c.getContext('2d').drawImage(img, 0, 0);
+              URL.revokeObjectURL(url);
+              onImageLoad(
+                c.getContext('2d').getImageData(0, 0, c.width, c.height),
+                { width: img.naturalWidth, height: img.naturalHeight, colorDepth: 8, fileName: file.name }
+              );
+              resolve();
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Не удалось загрузить')); };
+            img.src = url;
+          });
+        }
+      }
+    } catch (err) {
+      alert('Ошибка загрузки:\n' + err.message);
+    } finally {
+      setOpening(false);
+    }
   };
 
   const handleClear = () => {
-    // Сброс input + очистка состояния
     if (fileInputRef.current) fileInputRef.current.value = '';
     onClear();
   };
 
   return (
     <>
-      <div className="flex items-center gap-1.5 h-9 px-3 bg-[#111113] border-b border-[#27272a] shrink-0">
+      <div className="flex items-center gap-2 h-11 px-4 bg-[#1e1f26] border-b border-[#32333f] shrink-0">
 
-        {/* Open */}
+        <span className="text-sm font-bold tracking-widest text-[#7c7f96] uppercase mr-3 select-none">
+          Редактор изображений
+        </span>
+
+        <div className="w-px h-5 bg-[#32333f]" />
+
         <input
           ref={fileInputRef}
           type="file"
@@ -66,37 +93,42 @@ export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) 
         />
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="px-3 py-1 text-xs rounded border border-[#3f3f46] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5] transition-colors"
+          disabled={opening}
+          className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#a0a2b5]
+                     hover:bg-[#2c2d38] hover:text-[#e0e1ea] transition-colors
+                     disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          Open
+          {opening ? 'Открытие…' : 'Открыть'}
         </button>
 
-        {/* Save и Clear — только если есть изображение */}
         {imageData && (
           <>
             <button
               onClick={() => setSaveOpen(true)}
-              className="px-3 py-1 text-xs rounded border border-[#3f3f46] text-[#a1a1aa] hover:bg-[#27272a] hover:text-[#f4f4f5] transition-colors"
+              disabled={opening}
+              className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#a0a2b5]
+                         hover:bg-[#2c2d38] hover:text-[#e0e1ea] transition-colors
+                         disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              Save As…
+              Сохранить как…
             </button>
 
-            <div className="w-px h-4 bg-[#3f3f46] mx-1" />
+            <div className="w-px h-5 bg-[#32333f] mx-1" />
 
             <button
               onClick={handleClear}
-              className="px-3 py-1 text-xs rounded border border-[#3f3f46] text-[#52525b] hover:border-[#ef4444] hover:text-[#ef4444] transition-colors"
-              title="Close image and clear canvas"
+              disabled={opening}
+              className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#5a5c70]
+                         hover:border-[#c0524a] hover:text-[#c0524a] transition-colors
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Закрыть изображение и очистить холст"
             >
-              Close
+              Закрыть
             </button>
           </>
         )}
 
-        {/* Место для инструментов лаб 2–5 */}
         <div className="flex-1" />
-        <div id="toolbar-extra" className="flex gap-1" />
-
       </div>
 
       <SaveDialog
