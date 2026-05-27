@@ -1,6 +1,7 @@
-import Toolbar  from './components/Toolbar';
-import Canvas   from './components/Canvas';
-import StatusBar from './components/StatusBar';
+import Toolbar      from './components/Toolbar';
+import Canvas       from './components/Canvas';
+import StatusBar    from './components/StatusBar';
+import ChannelPanel from './components/ChannelPanel';
 import { useImageStore } from './hooks/useImageStore';
 
 export default function App() {
@@ -8,10 +9,18 @@ export default function App() {
     originalImageData,
     displayImageData,
     imageInfo,
-    scale,
-    setScale,
+    scale, setScale,
     loadImage,
     clearImage,
+    enabledChannels,
+    toggleChannel,
+    channelThumbs,
+    showChannels,
+    toggleChannels,
+    activeTool,
+    toggleEyedropper,
+    pickedPixel, setPickedPixel,
+    closePicker,
   } = useImageStore();
 
   return (
@@ -21,16 +30,31 @@ export default function App() {
         onClear={clearImage}
         imageData={originalImageData}
         imageInfo={imageInfo}
+        activeTool={activeTool}
+        onToggleEyedropper={toggleEyedropper}
+        showChannels={showChannels}
+        onToggleChannels={toggleChannels}
       />
 
-      {/* Сюда в лаб 2 добавится боковая панель каналов */}
       <div className="flex flex-1 overflow-hidden">
         <Canvas
           displayImageData={displayImageData}
           scale={scale}
           onScaleChange={setScale}
+          activeTool={activeTool}
+          onPickPixel={setPickedPixel}
+          pickedPixel={pickedPixel}
+          onClearPick={closePicker}
         />
-        {/* <ChannelPanel /> */}
+
+        {showChannels && originalImageData && (
+          <ChannelPanel
+            imageData={originalImageData}
+            enabledChannels={enabledChannels}
+            onToggle={toggleChannel}
+            channelThumbs={channelThumbs}
+          />
+        )}
       </div>
 
       <StatusBar imageInfo={imageInfo} scale={scale} />

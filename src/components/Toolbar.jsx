@@ -1,55 +1,57 @@
-import { useRef, useState } from 'react';
-import { decodeGB7 } from '../lib/gb7';
-import SaveDialog from './SaveDialog';
+import { useRef, useState } from "react";
+import { decodeGB7 } from "../lib/gb7";
+import SaveDialog from "./SaveDialog";
 
-export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) {
+export default function Toolbar({
+  onImageLoad, onClear, imageData, imageInfo,
+  activeTool, onToggleEyedropper,
+  showChannels, onToggleChannels,
+}) {
   const fileInputRef = useRef(null);
   const [saveOpen, setSaveOpen] = useState(false);
-  const [opening, setOpening]  = useState(false);
+  const [opening, setOpening]   = useState(false);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    e.target.value = '';
+    e.target.value = "";
     setOpening(true);
-
     try {
-      const ext = file.name.split('.').pop().toLowerCase();
-
-      if (ext === 'gb7') {
-        // GB7 — наш кодек, читаем как arrayBuffer
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (ext === "gb7") {
         const buffer = await file.arrayBuffer();
         const { imageData, width, height, colorDepth } = decodeGB7(buffer);
         onImageLoad(imageData, { width, height, colorDepth, fileName: file.name });
-
       } else {
-        // PNG/JPG — createImageBitmap самый быстрый способ,
-        // декодирование происходит асинхронно в браузере
         const bitmap = await createImageBitmap(file);
         const { width, height } = bitmap;
-
-        // Рисуем на offscreen canvas — не блокирует UI
         const offscreen = new OffscreenCanvas(width, height);
-        const ctx = offscreen.getContext('2d');
+        const ctx = offscreen.getContext("2d");
         ctx.drawImage(bitmap, 0, 0);
         bitmap.close();
-
-        // getImageData — единственная тяжёлая операция, но она быстрее
-        // чем через обычный canvas потому что offscreen не связан с DOM
         const imgData = ctx.getImageData(0, 0, width, height);
         onImageLoad(imgData, { width, height, colorDepth: 8, fileName: file.name });
       }
     } catch (err) {
-      alert('Ошибка загрузки:\n' + err.message);
+      alert("Ошибка загрузки:\n" + err.message);
     } finally {
       setOpening(false);
     }
   };
 
   const handleClear = () => {
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = "";
     onClear();
   };
+
+  const isEyedropper = activeTool === "eyedropper";
+
+  // Стиль для переключаемых кнопок-инструментов
+  const toolBtnStyle = (active) => ({
+    borderColor: active ? "#9496a8" : "#3a3b47",
+    color:       active ? "#f0f0f5" : "#5a5c70",
+    background:  active ? "#32334a" : "transparent",
+  });
 
   return (
     <>
@@ -76,7 +78,7 @@ export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) 
                      hover:bg-[#2c2d38] hover:text-[#e0e1ea] transition-colors
                      disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {opening ? 'Открытие…' : 'Открыть'}
+          {opening ? "Открытие…" : "Открыть"}
         </button>
 
         {imageData && (
@@ -101,6 +103,27 @@ export default function Toolbar({ onImageLoad, onClear, imageData, imageInfo }) 
                          disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Закрыть
+            </button>
+
+            <div className="w-px h-5 bg-[#32333f] mx-1" />
+
+            {/* Инструменты */}
+            <button
+              onClick={onToggleEyedropper}
+              title="Пипетка — кликните по пикселю изображения"
+              className="px-3 py-1 text-sm rounded border transition-colors"
+              style={toolBtnStyle(isEyedropper)}
+            >
+              Пипетка
+            </button>
+
+            <button
+              onClick={onToggleChannels}
+              title="Панель каналов"
+              className="px-3 py-1 text-sm rounded border transition-colors"
+              style={toolBtnStyle(showChannels)}
+            >
+              Каналы
             </button>
           </>
         )}
