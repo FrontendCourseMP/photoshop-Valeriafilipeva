@@ -1,7 +1,9 @@
-import Toolbar      from './components/Toolbar';
-import Canvas       from './components/Canvas';
-import StatusBar    from './components/StatusBar';
-import ChannelPanel from './components/ChannelPanel';
+import { useState } from 'react';
+import Toolbar       from './components/Toolbar';
+import Canvas        from './components/Canvas';
+import StatusBar     from './components/StatusBar';
+import ChannelPanel  from './components/ChannelPanel';
+import LevelsDialog  from './components/LevelsDialog';
 import { useImageStore } from './hooks/useImageStore';
 
 export default function App() {
@@ -21,7 +23,11 @@ export default function App() {
     toggleEyedropper,
     pickedPixel, setPickedPixel,
     closePicker,
+    updateDisplay,
+    applyLevelsResult,
   } = useImageStore();
+
+  const [levelsOpen, setLevelsOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -34,6 +40,7 @@ export default function App() {
         onToggleEyedropper={toggleEyedropper}
         showChannels={showChannels}
         onToggleChannels={toggleChannels}
+        onOpenLevels={() => setLevelsOpen(true)}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -58,6 +65,18 @@ export default function App() {
       </div>
 
       <StatusBar imageInfo={imageInfo} scale={scale} />
+
+      <LevelsDialog
+        isOpen={levelsOpen}
+        onClose={() => setLevelsOpen(false)}
+        originalImageData={originalImageData}
+        onApply={(result) => {
+          applyLevelsResult(result);
+          setLevelsOpen(false);
+        }}
+        onPreview={updateDisplay}
+        onCancelPreview={() => updateDisplay(originalImageData)}
+      />
     </div>
   );
 }

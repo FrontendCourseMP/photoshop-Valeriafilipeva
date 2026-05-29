@@ -6,6 +6,7 @@ export default function Toolbar({
   onImageLoad, onClear, imageData, imageInfo,
   activeTool, onToggleEyedropper,
   showChannels, onToggleChannels,
+  onOpenLevels,
 }) {
   const fileInputRef = useRef(null);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -46,7 +47,6 @@ export default function Toolbar({
 
   const isEyedropper = activeTool === "eyedropper";
 
-  // Стиль для переключаемых кнопок-инструментов
   const toolBtnStyle = (active) => ({
     borderColor: active ? "#9496a8" : "#3a3b47",
     color:       active ? "#f0f0f5" : "#5a5c70",
@@ -107,7 +107,6 @@ export default function Toolbar({
 
             <div className="w-px h-5 bg-[#32333f] mx-1" />
 
-            {/* Инструменты */}
             <button
               onClick={onToggleEyedropper}
               title="Пипетка — кликните по пикселю изображения"
@@ -124,6 +123,15 @@ export default function Toolbar({
               style={toolBtnStyle(showChannels)}
             >
               Каналы
+            </button>
+
+            <button
+              onClick={onOpenLevels}
+              title="Градационная коррекция уровней"
+              className="px-3 py-1 text-sm rounded border transition-colors"
+              style={toolBtnStyle(false)}
+            >
+              Уровни
             </button>
           </>
         )}
