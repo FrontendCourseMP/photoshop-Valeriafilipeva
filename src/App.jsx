@@ -1,17 +1,18 @@
-import { useState } from 'react';
-import Toolbar       from './components/Toolbar';
-import Canvas        from './components/Canvas';
-import StatusBar     from './components/StatusBar';
-import ChannelPanel  from './components/ChannelPanel';
-import LevelsDialog  from './components/LevelsDialog';
-import { useImageStore } from './hooks/useImageStore';
+import { useState } from "react";
+import Toolbar from "./components/Toolbar";
+import Canvas from "./components/Canvas";
+import StatusBar from "./components/StatusBar";
+import ChannelPanel from "./components/ChannelPanel";
+import LevelsDialog from "./components/LevelsDialog";
+import { useImageStore } from "./hooks/useImageStore";
 
 export default function App() {
   const {
     originalImageData,
     displayImageData,
     imageInfo,
-    scale, setScale,
+    scale,
+    setScale,
     loadImage,
     clearImage,
     enabledChannels,
@@ -21,7 +22,8 @@ export default function App() {
     toggleChannels,
     activeTool,
     toggleEyedropper,
-    pickedPixel, setPickedPixel,
+    pickedPixel,
+    setPickedPixel,
     closePicker,
     updateDisplay,
     applyLevelsResult,
