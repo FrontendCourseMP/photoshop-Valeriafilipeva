@@ -9,6 +9,7 @@ const CHANNEL_OPTIONS = [
   { value: 'G',      label: 'Зелёный (G)' },
   { value: 'B',      label: 'Синий (B)' },
   { value: 'A',      label: 'Альфа (A)' },
+  
 ];
 
 export default function LevelsDialog({
