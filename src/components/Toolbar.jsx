@@ -3,14 +3,20 @@ import { decodeGB7 } from "../lib/gb7";
 import SaveDialog from "./SaveDialog";
 
 export default function Toolbar({
-  onImageLoad, onClear, imageData, imageInfo,
-  activeTool, onToggleEyedropper,
-  showChannels, onToggleChannels,
+  onImageLoad,
+  onClear,
+  imageData,
+  imageInfo,
+  activeTool,
+  onToggleEyedropper,
+  showChannels,
+  onToggleChannels,
   onOpenLevels,
+  onOpenResize,
 }) {
   const fileInputRef = useRef(null);
   const [saveOpen, setSaveOpen] = useState(false);
-  const [opening, setOpening]   = useState(false);
+  const [opening, setOpening] = useState(false);
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -22,7 +28,12 @@ export default function Toolbar({
       if (ext === "gb7") {
         const buffer = await file.arrayBuffer();
         const { imageData, width, height, colorDepth } = decodeGB7(buffer);
-        onImageLoad(imageData, { width, height, colorDepth, fileName: file.name });
+        onImageLoad(imageData, {
+          width,
+          height,
+          colorDepth,
+          fileName: file.name,
+        });
       } else {
         const bitmap = await createImageBitmap(file);
         const { width, height } = bitmap;
@@ -31,7 +42,12 @@ export default function Toolbar({
         ctx.drawImage(bitmap, 0, 0);
         bitmap.close();
         const imgData = ctx.getImageData(0, 0, width, height);
-        onImageLoad(imgData, { width, height, colorDepth: 8, fileName: file.name });
+        onImageLoad(imgData, {
+          width,
+          height,
+          colorDepth: 8,
+          fileName: file.name,
+        });
       }
     } catch (err) {
       alert("Ошибка загрузки:\n" + err.message);
@@ -49,14 +65,13 @@ export default function Toolbar({
 
   const toolBtnStyle = (active) => ({
     borderColor: active ? "#9496a8" : "#3a3b47",
-    color:       active ? "#f0f0f5" : "#5a5c70",
-    background:  active ? "#32334a" : "transparent",
+    color: active ? "#f0f0f5" : "#5a5c70",
+    background: active ? "#32334a" : "transparent",
   });
 
   return (
     <>
       <div className="flex items-center gap-2 h-11 px-4 bg-[#1e1f26] border-b border-[#32333f] shrink-0">
-
         <span className="text-sm font-bold tracking-widest text-[#7c7f96] uppercase mr-3 select-none">
           Редактор изображений
         </span>
@@ -132,6 +147,15 @@ export default function Toolbar({
               style={toolBtnStyle(false)}
             >
               Уровни
+            </button>
+
+            <button
+              onClick={onOpenResize}
+              title="Изменить размер изображения"
+              className="px-3 py-1 text-sm rounded border transition-colors"
+              style={toolBtnStyle(false)}
+            >
+              Размер
             </button>
           </>
         )}

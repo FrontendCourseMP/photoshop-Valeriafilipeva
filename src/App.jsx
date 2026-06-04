@@ -1,18 +1,18 @@
-import { useState } from "react";
-import Toolbar from "./components/Toolbar";
-import Canvas from "./components/Canvas";
-import StatusBar from "./components/StatusBar";
-import ChannelPanel from "./components/ChannelPanel";
-import LevelsDialog from "./components/LevelsDialog";
-import { useImageStore } from "./hooks/useImageStore";
+import { useState } from 'react';
+import Toolbar      from './components/Toolbar';
+import Canvas       from './components/Canvas';
+import StatusBar    from './components/StatusBar';
+import ChannelPanel from './components/ChannelPanel';
+import LevelsDialog from './components/LevelsDialog';
+import ResizeDialog from './components/ResizeDialog';
+import { useImageStore } from './hooks/useImageStore';
 
 export default function App() {
   const {
     originalImageData,
     displayImageData,
     imageInfo,
-    scale,
-    setScale,
+    scale, setScale,
     loadImage,
     clearImage,
     enabledChannels,
@@ -22,14 +22,14 @@ export default function App() {
     toggleChannels,
     activeTool,
     toggleEyedropper,
-    pickedPixel,
-    setPickedPixel,
+    pickedPixel, setPickedPixel,
     closePicker,
     updateDisplay,
     applyLevelsResult,
   } = useImageStore();
 
   const [levelsOpen, setLevelsOpen] = useState(false);
+  const [resizeOpen, setResizeOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -43,6 +43,7 @@ export default function App() {
         showChannels={showChannels}
         onToggleChannels={toggleChannels}
         onOpenLevels={() => setLevelsOpen(true)}
+        onOpenResize={() => setResizeOpen(true)}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -66,7 +67,11 @@ export default function App() {
         )}
       </div>
 
-      <StatusBar imageInfo={imageInfo} scale={scale} />
+      <StatusBar
+        imageInfo={imageInfo}
+        scale={scale}
+        onScaleChange={setScale}
+      />
 
       <LevelsDialog
         isOpen={levelsOpen}
@@ -78,6 +83,16 @@ export default function App() {
         }}
         onPreview={updateDisplay}
         onCancelPreview={() => updateDisplay(originalImageData)}
+      />
+
+      <ResizeDialog
+        isOpen={resizeOpen}
+        onClose={() => setResizeOpen(false)}
+        imageData={originalImageData}
+        onApply={(result) => {
+          applyLevelsResult(result);
+          setResizeOpen(false);
+        }}
       />
     </div>
   );
