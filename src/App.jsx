@@ -26,6 +26,7 @@ export default function App() {
     closePicker,
     updateDisplay,
     applyLevelsResult,
+    resetToInitial
   } = useImageStore();
 
   const [levelsOpen, setLevelsOpen] = useState(false);
@@ -44,6 +45,7 @@ export default function App() {
         onToggleChannels={toggleChannels}
         onOpenLevels={() => setLevelsOpen(true)}
         onOpenResize={() => setResizeOpen(true)}
+        onReset={resetToInitial}  onReset={resetToInitial}
       />
 
       <div className="flex flex-1 overflow-hidden">

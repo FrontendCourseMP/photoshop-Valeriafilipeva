@@ -17,8 +17,10 @@ export function useImageStore() {
   const [pickedPixel, setPickedPixel] = useState(null);
 
   const originalRef = useRef(null);
+  const initialRef = useRef(null); // самый первый загруженный ImageData
 
   const loadImage = useCallback((imageData, info) => {
+    initialRef.current = imageData;
     originalRef.current = imageData;
     setOriginalImageData(imageData);
     setDisplayImageData(imageData);
@@ -48,6 +50,21 @@ export function useImageStore() {
 
   const updateDisplay = useCallback((newImageData) => {
     setDisplayImageData(newImageData);
+  }, []);
+
+  const resetToInitial = useCallback(() => {
+    const init = initialRef.current;
+    if (!init) return;
+    originalRef.current = init;
+    setOriginalImageData(init);
+    setDisplayImageData(init);
+    setEnabledChannels(DEFAULT_CHANNELS);
+    setPickedPixel(null);
+    setActiveTool("none");
+    setChannelThumbs({});
+    makeChannelThumbsAsync(init, (channel, dataUrl) => {
+      setChannelThumbs((prev) => ({ ...prev, [channel]: dataUrl }));
+    });
   }, []);
 
   const cloneOriginal = useCallback(() => {
@@ -125,5 +142,6 @@ export function useImageStore() {
     setPickedPixel,
     closePicker,
     applyLevelsResult,
+    resetToInitial,
   };
 }

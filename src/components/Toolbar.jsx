@@ -13,6 +13,7 @@ export default function Toolbar({
   onToggleChannels,
   onOpenLevels,
   onOpenResize,
+  onReset,
 }) {
   const fileInputRef = useRef(null);
   const [saveOpen, setSaveOpen] = useState(false);
@@ -118,6 +119,19 @@ export default function Toolbar({
                          disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Закрыть
+            </button>
+
+            <div className="w-px h-5 bg-[#32333f] mx-1" />
+
+            <button
+              onClick={onReset}
+              disabled={opening}
+              title="Сбросить все изменения и вернуть исходное изображение"
+              className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#5a5c70]
+             hover:border-[#7c6a2a] hover:text-[#c8a84b] transition-colors
+             disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Сбросить
             </button>
 
             <div className="w-px h-5 bg-[#32333f] mx-1" />
