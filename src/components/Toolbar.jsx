@@ -126,7 +126,7 @@ export default function Toolbar({
             <button
               onClick={onReset}
               disabled={opening}
-              title="Сбросить все изменения и вернуть исходное изображение"
+              title="Сбросить все изменения и вернуть исходное изображение "
               className="px-3 py-1 text-sm rounded border border-[#3a3b47] text-[#5a5c70]
              hover:border-[#7c6a2a] hover:text-[#c8a84b] transition-colors
              disabled:opacity-40 disabled:cursor-not-allowed"
