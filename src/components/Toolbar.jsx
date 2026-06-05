@@ -13,6 +13,7 @@ export default function Toolbar({
   onToggleChannels,
   onOpenLevels,
   onOpenResize,
+  onOpenFilter,
   onReset,
 }) {
   const fileInputRef = useRef(null);
@@ -170,6 +171,15 @@ export default function Toolbar({
               style={toolBtnStyle(false)}
             >
               Размер
+            </button>
+
+            <button
+              onClick={onOpenFilter}
+              title="Фильтрация изображения"
+              className="px-3 py-1 text-sm rounded border transition-colors"
+              style={toolBtnStyle(false)}
+            >
+              Фильтр
             </button>
           </>
         )}

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import Toolbar      from './components/Toolbar';
-import Canvas       from './components/Canvas';
-import StatusBar    from './components/StatusBar';
-import ChannelPanel from './components/ChannelPanel';
-import LevelsDialog from './components/LevelsDialog';
-import ResizeDialog from './components/ResizeDialog';
+import Toolbar       from './components/Toolbar';
+import Canvas        from './components/Canvas';
+import StatusBar     from './components/StatusBar';
+import ChannelPanel  from './components/ChannelPanel';
+import LevelsDialog  from './components/LevelsDialog';
+import ResizeDialog  from './components/ResizeDialog';
+import FilterDialog  from './components/FilterDialog';
 import { useImageStore } from './hooks/useImageStore';
 
 export default function App() {
@@ -26,11 +27,12 @@ export default function App() {
     closePicker,
     updateDisplay,
     applyLevelsResult,
-    resetToInitial
+    resetToInitial,
   } = useImageStore();
 
   const [levelsOpen, setLevelsOpen] = useState(false);
   const [resizeOpen, setResizeOpen] = useState(false);
+  const [filterOpen, setFilterOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden">
@@ -45,7 +47,8 @@ export default function App() {
         onToggleChannels={toggleChannels}
         onOpenLevels={() => setLevelsOpen(true)}
         onOpenResize={() => setResizeOpen(true)}
-        onReset={resetToInitial}  onReset={resetToInitial}
+        onOpenFilter={() => setFilterOpen(true)}
+        onReset={resetToInitial}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -79,10 +82,7 @@ export default function App() {
         isOpen={levelsOpen}
         onClose={() => setLevelsOpen(false)}
         originalImageData={originalImageData}
-        onApply={(result) => {
-          applyLevelsResult(result);
-          setLevelsOpen(false);
-        }}
+        onApply={(result) => { applyLevelsResult(result); setLevelsOpen(false); }}
         onPreview={updateDisplay}
         onCancelPreview={() => updateDisplay(originalImageData)}
       />
@@ -91,10 +91,16 @@ export default function App() {
         isOpen={resizeOpen}
         onClose={() => setResizeOpen(false)}
         imageData={originalImageData}
-        onApply={(result) => {
-          applyLevelsResult(result);
-          setResizeOpen(false);
-        }}
+        onApply={(result) => { applyLevelsResult(result); setResizeOpen(false); }}
+      />
+
+      <FilterDialog
+        isOpen={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        originalImageData={originalImageData}
+        onApply={(result) => { applyLevelsResult(result); setFilterOpen(false); }}
+        onPreview={updateDisplay}
+        onCancelPreview={() => updateDisplay(originalImageData)}
       />
     </div>
   );
