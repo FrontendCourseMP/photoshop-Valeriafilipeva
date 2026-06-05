@@ -124,6 +124,7 @@ export default function Toolbar({
 
             <div className="w-px h-5 bg-[#32333f] mx-1" />
 
+
             <button
               onClick={onReset}
               disabled={opening}
